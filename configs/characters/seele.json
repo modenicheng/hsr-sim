@@ -1,0 +1,11 @@
+{
+    "id": 1001,
+    "name": "希儿",
+    "base_hp": 931,
+    "base_atk": 640,
+    "base_def": 363,
+    "speed": 115,
+    "rarity": 5,
+    "element": "quantum",
+    "skill_ids": [1001, 1002, 1003]
+}
