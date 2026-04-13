@@ -3,10 +3,10 @@
   "name": "seele",
   "rarity": 5,
   "element": "quantum",
-  "base_hp": 1000.0,
-  "base_atk": 500.0,
-  "base_def": 500.0,
-  "base_spd": 100.0,
+  "base_hp": 931.0,
+  "base_atk": 640.0,
+  "base_def": 363.0,
+  "base_spd": 115.0,
   "basic_atk": {
     "id": 11000000,
     "name": "seele_basic",
@@ -78,20 +78,6 @@
       "script": "eidolons/seele_eidolon_6"
     }
   ],
-  "talent_ids": [
-    15000000
-  ],
-  "technique_id": 16000000,
-  "bonus_ability_ids": [
-    17000000,
-    17000001,
-    17000002
-  ],
-  "stat_bonus": {
-    "atk_percent": 0.0
-  },
-  "elation_skill": null,
-  "memosprite": null,
   "talents": [
     {
       "id": 15000000,
@@ -125,5 +111,10 @@
       "description": "TODO: fill bonus ability description",
       "script": "bonus_ability/seele_bonus_ability_3"
     }
-  ]
+  ],
+  "stat_bonus": {
+    "atk_percent": 0.0
+  },
+  "elation_skill": null,
+  "memosprite": null
 }

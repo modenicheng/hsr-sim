@@ -78,20 +78,6 @@
       "script": "eidolons/sunday_eidolon_6"
     }
   ],
-  "talent_ids": [
-    15000001
-  ],
-  "technique_id": 16000001,
-  "bonus_ability_ids": [
-    17000003,
-    17000004,
-    17000005
-  ],
-  "stat_bonus": {
-    "atk_percent": 0.0
-  },
-  "elation_skill": null,
-  "memosprite": null,
   "talents": [
     {
       "id": 15000001,
@@ -125,5 +111,10 @@
       "description": "TODO: fill bonus ability description",
       "script": "bonus_ability/sunday_bonus_ability_3"
     }
-  ]
+  ],
+  "stat_bonus": {
+    "atk_percent": 0.0
+  },
+  "elation_skill": null,
+  "memosprite": null
 }

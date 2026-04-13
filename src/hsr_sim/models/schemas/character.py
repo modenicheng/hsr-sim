@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from .enums import StatType, Element
 from .eidolon import EidolonConfig
+from .passive import PassiveSkillConfig
 from .skill import SkillConfig
 
 class Memosprite(BaseModel):
@@ -27,9 +28,9 @@ class CharacterConfig(BaseModel):
     skill: SkillConfig  # 战技
     ultimate: SkillConfig  # 终结技
     eidolons: list[EidolonConfig] = []  # 星魂
-    talent_ids: list[int] = []  # 天赋
-    technique_id: int  # 秘技
-    bonus_ability_ids: list[int] = []  # 额外能力
+    talents: list[PassiveSkillConfig] = []  # 天赋
+    technique: PassiveSkillConfig  # 秘技
+    bonus_abilities: list[PassiveSkillConfig] = []  # 额外能力
     stat_bonus: dict[StatType, float] = {}  # 行迹提供的角色固有属性加成
     elation_skill: int | None = None  # 欢愉技 ID
     memosprite: Memosprite | None = None  # 忆灵配置

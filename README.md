@@ -36,6 +36,16 @@ uv run .\scripts\create_character.py <character_name...> [--version v1.0] [-f]
 configs/<version>/characters/<character_name>/
 ```
 
+角色主 JSON（`<character_name>.json`）中的关键结构：
+
+- 技能相关：`basic_atk` / `skill` / `ultimate`（均为嵌套对象）
+- 星魂：`eidolons`（嵌套对象列表）
+- 天赋：`talents`（嵌套对象列表）
+- 秘技：`technique`（嵌套对象）
+- 额外能力：`bonus_abilities`（嵌套对象列表）
+
+说明：`talent_ids / technique_id / bonus_ability_ids` 已改为上述嵌套结构。
+
 ### Create a relic set
 
 ```sh

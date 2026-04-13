@@ -33,6 +33,7 @@ from typing import Any
 from hsr_sim.core.config import CONFIGS_DIR
 from hsr_sim.models.schemas.character import CharacterConfig
 from hsr_sim.models.schemas.eidolon import EidolonConfig
+from hsr_sim.models.schemas.passive import PassiveSkillConfig
 from hsr_sim.models.schemas.skill import SkillConfig
 from hsr_sim.models.schemas.enums import Element, SkillType, StatType
 
@@ -284,37 +285,33 @@ def run_create_character(
         skill=skill,
         ultimate=ultimate,
         eidolons=eidolons,
-        talent_ids=[talent_id],
-        technique_id=technique_id,
-        bonus_ability_ids=bonus_ability_ids,
+        talents=[
+            PassiveSkillConfig(
+                id=talent_id,
+                name=f"{character_name}_talent",
+                description="TODO: fill talent description",
+                script=f"talent/{character_name}_talent",
+            )
+        ],
+        technique=PassiveSkillConfig(
+            id=technique_id,
+            name=f"{character_name}_technique",
+            description="TODO: fill technique description",
+            script=f"technique/{character_name}_technique",
+        ),
+        bonus_abilities=[
+            PassiveSkillConfig(
+                id=bonus_ability_ids[i - 1],
+                name=f"{character_name}_bonus_ability_{i}",
+                description="TODO: fill bonus ability description",
+                script=f"bonus_ability/{character_name}_bonus_ability_{i}",
+            )
+            for i in range(1, 4)
+        ],
         stat_bonus={StatType.ATK_PERCENT: 0.0},
     )
 
-    payload = character.model_dump(mode="json")
-    payload["talents"] = [{
-        "id": talent_id,
-        "name": f"{character_name}_talent",
-        "description": "TODO: fill talent description",
-        "script": f"talent/{character_name}_talent",
-    }]
-    payload["technique"] = {
-        "id": technique_id,
-        "name": f"{character_name}_technique",
-        "description": "TODO: fill technique description",
-        "script": f"technique/{character_name}_technique",
-    }
-    payload["bonus_abilities"] = [{
-        "id":
-        bonus_ability_ids[i - 1],
-        "name":
-        f"{character_name}_bonus_ability_{i}",
-        "description":
-        "TODO: fill bonus ability description",
-        "script":
-        f"bonus_ability/{character_name}_bonus_ability_{i}",
-    } for i in range(1, 4)]
-
-    _write_json(character_json_path, payload)
+    _write_json(character_json_path, character.model_dump(mode="json"))
     created_files.append(character_json_path)
 
     skill_file_stems = ["basic_atk", "skill", "ultimate"]
