@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from .enums import StatType, Element
-
+from .skill import SkillConfig
 
 class Memosprite(BaseModel):
     id: int
@@ -22,9 +22,9 @@ class CharacterConfig(BaseModel):
     base_atk: float = Field(gt=0)
     base_def: float = Field(gt=0)
     base_spd: float = Field(gt=0)
-    basic_atk_id: int  # 普攻 ID
-    skill_id: int  # 战技 ID
-    ultimate_id: int  # 终结技 ID
+    basic_atk: SkillConfig  # 普攻
+    skill: SkillConfig  # 战技
+    ultimate: SkillConfig  # 终结技
     eidolon_ids: list[int] = []  # 星魂
     talent_ids: list[int] = []  # 天赋
     technique_id: int  # 秘技

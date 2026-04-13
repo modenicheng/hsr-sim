@@ -48,7 +48,7 @@ class StatType(str, Enum):
     CRIT_DAMAGE = "crit_damage"  # 暴击伤害
     BREAK_EFFECT = "break_effect"  # 击破特攻
     ENERGY_REGEN = "energy_regen"  # 能量回复
-    MAX_ENERGY = "max_energy"  # 最大能量
+    OUTGOING_HEALING_BOOST = "outgoing_healing_boost"  # 治疗加成
     EFFECT_HIT_RATE = "effect_hit_rate"  # 效果命中
     EFFECT_RES = "effect_res"  # 效果抵抗
     Elation = "elation"  # 欢愉度
