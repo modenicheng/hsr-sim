@@ -29,7 +29,7 @@ class RelicSlot(str, Enum):
     """遗器部位"""
     HEAD = "head"  # 头部
     HANDS = "hands"  # 手部
-    TORSO = "torso"  # 护腿
+    TORSO = "torso"  # 躯干
     FEET = "feet"  # 鞋子
     PLANAR_SPHERE = "planar_sphere"  # 位面球
     LINK_ROPE = "link_rope"  # 连接绳

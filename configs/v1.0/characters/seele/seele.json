@@ -1,0 +1,127 @@
+{
+  "id": 0,
+  "name": "seele",
+  "rarity": 5,
+  "element": "quantum",
+  "base_hp": 1000.0,
+  "base_atk": 500.0,
+  "base_def": 500.0,
+  "base_spd": 100.0,
+  "basic_atk": {
+    "id": 0,
+    "name": "seele_basic",
+    "type": "basic",
+    "description": "TODO: fill description",
+    "target_type": "single_target",
+    "energy_gain": 0.0,
+    "script": "skills/seele_basic_atk"
+  },
+  "skill": {
+    "id": 0,
+    "name": "seele_skill",
+    "type": "skill",
+    "description": "TODO: fill description",
+    "target_type": "single_target",
+    "energy_gain": 0.0,
+    "script": "skills/seele_skill"
+  },
+  "ultimate": {
+    "id": 0,
+    "name": "seele_ultimate",
+    "type": "ultimate",
+    "description": "TODO: fill description",
+    "target_type": "single_target",
+    "energy_gain": 0.0,
+    "script": "skills/seele_ultimate"
+  },
+  "eidolons": [
+    {
+      "id": 0,
+      "index": 1,
+      "name": "seele_eidolon_1",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/seele_eidolon_1"
+    },
+    {
+      "id": 0,
+      "index": 2,
+      "name": "seele_eidolon_2",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/seele_eidolon_2"
+    },
+    {
+      "id": 0,
+      "index": 3,
+      "name": "seele_eidolon_3",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/seele_eidolon_3"
+    },
+    {
+      "id": 0,
+      "index": 4,
+      "name": "seele_eidolon_4",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/seele_eidolon_4"
+    },
+    {
+      "id": 0,
+      "index": 5,
+      "name": "seele_eidolon_5",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/seele_eidolon_5"
+    },
+    {
+      "id": 0,
+      "index": 6,
+      "name": "seele_eidolon_6",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/seele_eidolon_6"
+    }
+  ],
+  "talent_ids": [
+    0
+  ],
+  "technique_id": 0,
+  "bonus_ability_ids": [
+    0
+  ],
+  "stat_bonus": {
+    "atk_percent": 0.0
+  },
+  "elation_skill": null,
+  "memosprite": null,
+  "talents": [
+    {
+      "id": 0,
+      "name": "seele_talent",
+      "description": "TODO: fill talent description",
+      "script": "talent/seele_talent"
+    }
+  ],
+  "technique": {
+    "id": 0,
+    "name": "seele_technique",
+    "description": "TODO: fill technique description",
+    "script": "technique/seele_technique"
+  },
+  "bonus_abilities": [
+    {
+      "id": 0,
+      "name": "seele_bonus_ability_1",
+      "description": "TODO: fill bonus ability description",
+      "script": "bonus_ability/seele_bonus_ability_1"
+    },
+    {
+      "id": 0,
+      "name": "seele_bonus_ability_2",
+      "description": "TODO: fill bonus ability description",
+      "script": "bonus_ability/seele_bonus_ability_2"
+    },
+    {
+      "id": 0,
+      "name": "seele_bonus_ability_3",
+      "description": "TODO: fill bonus ability description",
+      "script": "bonus_ability/seele_bonus_ability_3"
+    }
+  ]
+}

@@ -212,8 +212,8 @@ flowchart LR
 - **关键文件**：
   - `enums.py`：集中定义所有枚举（`Element`, `Path`, `StatType`, `SkillType` 等），被其他模块广泛引用。
   - `character.py`：`CharacterConfig`，包含基础属性、技能槽位、星魂、行迹等。
-  - `skill.py`：`SkillConfig`，包含技能类型、消耗、冷却、脚本路径、数值参数。
-  - `light_cone.py`、`relic.py`：遗器和光锥的静态定义。
+  - `skill.py`：`SkillConfig`，包含技能类型、脚本路径。所有技能逻辑全部使用脚本以保证统一。
+  - `light_cone.py`、`relic.py`：遗器和光锥的静态定义，包含被动脚本。
 
 #### `models/db/` — ORM 模型（SQLAlchemy）
 
@@ -227,7 +227,7 @@ flowchart LR
 
 ### 5.3 `ecs/` — 运行时 ECS
 
-- **`world.py`**：封装 Esper 上下文管理，提供 `get_world()` 函数。
+- **`world.py`**：封装 Esper 上下文管理。
 - **`components/`**：定义所有运行时组件。使用 Pydantic 模型以便序列化和校验。组件分为：
   - **战斗状态**：`HealthComponent`, `AttackComponent`, `EnergyComponent` 等。
   - **资源与叠层**：`StackComponent`, `CustomEnergyComponent`。
@@ -252,7 +252,6 @@ flowchart LR
 - **`base.py`**：定义 `BaseSkill` 抽象类，要求子类实现 `execute(caster, targets)` 方法。被动技能可继承 `BasePassive`。
 - **`context.py`**：`SkillContext` 数据类，作为依赖注入容器，向脚本提供 `world`、`event_bus`、`hook_chain`、`config_loader` 等服务的访问接口，限制脚本对内部状态的随意修改。
 - **`manager.py`**：`SkillManager` 负责根据 `skill_id` 动态导入对应的脚本类、实例化并执行。
-- **`active/` 和 `passive/`**：存放具体的技能脚本文件，每个文件对应一个技能 ID。
 
 ### 5.7 `services/` — 业务服务
 

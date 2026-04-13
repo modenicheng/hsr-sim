@@ -1,5 +1,4 @@
-from typing_extensions import Self
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 from .enums import StatType, RelicSlot
 from .passive import PassiveSkillConfig
 
@@ -482,46 +481,51 @@ SUBSTAT_WEIGHT_MAP: dict[StatType, int] = {
     StatType.BREAK_EFFECT: 8,
 }
 
+class RelicSetConfig(BaseModel):
+    id: int
+    name: str
+    # 2件套效果和4件套效果至少有一个不为 None
+    passive_2_pc: PassiveSkillConfig # 2件套被动 必定有
+    passive_4_pc: PassiveSkillConfig | None = None  # 4件套被动
 
 class RelicConfig(BaseModel):
     id: int
     name: str
-    relic_set_id: int  # 遗器套装 ID
+    relic_set: RelicSetConfig  # 遗器套装
     slot: RelicSlot
-    rarity: int = Field(default=5, ge=2, le=5)
     story: str  # 背景故事
-    main_stat: dict[StatType, float]  # 主属性，只有一个键值对
-    sub_stats: dict[StatType, float] = {}  # 副属性，可以有多个键值对
-    passive_2_pc: PassiveSkillConfig | None = None  # 2件套被动
-    passive_4_pc: PassiveSkillConfig | None = None  # 4件套被动
+    # 这三个有关词条的不应该在这里写，它不属于遗器的固定属性，而是根据强化等级和随机抽选生成的动态属性
+    # rarity: int = Field(default=5, ge=2, le=5)
+    # main_stat: dict[StatType, float]  # 主属性，只有一个键值对
+    # sub_stats: dict[StatType, float] = {}  # 副属性，可以有多个键值对
 
-    @model_validator(mode="after")
-    def validate_relic(self) -> Self:
-        if not isinstance(self.main_stat, dict) or len(self.main_stat) != 1:
-            raise ValueError(
-                "main_stat must be a dict with exactly one key-value pair")
+    # @model_validator(mode="after")
+    # def validate_relic(self) -> Self:
+    #     if not isinstance(self.main_stat, dict) or len(self.main_stat) != 1:
+    #         raise ValueError(
+    #             "main_stat must be a dict with exactly one key-value pair")
 
-        stat_type, stat_value = next(iter(self.main_stat.items()))
-        if stat_type not in dict(SLOT_STATS_MAP[self.slot]):
-            raise ValueError(
-                f"Invalid main_stat {stat_type} for slot {self.slot}")
+    #     stat_type, stat_value = next(iter(self.main_stat.items()))
+    #     if stat_type not in dict(SLOT_STATS_MAP[self.slot]):
+    #         raise ValueError(
+    #             f"Invalid main_stat {stat_type} for slot {self.slot}")
 
-        stat_growth = MAIN_STAT_GROWTH_MAP[stat_type][self.rarity]
-        if stat_value > stat_growth.max_value:
-            raise ValueError(
-                f"main_stat {stat_type} value {stat_value} exceeds max value {stat_growth.max_value} for slot {self.slot} and rarity {self.rarity}."
-            )
-        if stat_value < stat_growth.base_value:
-            raise ValueError(
-                f"main_stat {stat_type} value {stat_value} is less than min value {stat_growth.base_value} for slot {self.slot} and rarity {self.rarity}."
-            )
+    #     stat_growth = MAIN_STAT_GROWTH_MAP[stat_type][self.rarity]
+    #     if stat_value > stat_growth.max_value:
+    #         raise ValueError(
+    #             f"main_stat {stat_type} value {stat_value} exceeds max value {stat_growth.max_value} for slot {self.slot} and rarity {self.rarity}."
+    #         )
+    #     if stat_value < stat_growth.base_value:
+    #         raise ValueError(
+    #             f"main_stat {stat_type} value {stat_value} is less than min value {stat_growth.base_value} for slot {self.slot} and rarity {self.rarity}."
+    #         )
 
-        if self.rarity == 2 and len(self.sub_stats) > 2:
-            raise ValueError("2-star relics can have at most 2 sub-stats")
-        elif len(self.sub_stats) > 4:
-            raise ValueError("Relics can have at most 4 sub-stats")
+    #     if self.rarity == 2 and len(self.sub_stats) > 2:
+    #         raise ValueError("2-star relics can have at most 2 sub-stats")
+    #     elif len(self.sub_stats) > 4:
+    #         raise ValueError("Relics can have at most 4 sub-stats")
 
-        if stat_type in self.sub_stats:
-            raise ValueError("Sub-stats cannot duplicate the main stat")
+    #     if stat_type in self.sub_stats:
+    #         raise ValueError("Sub-stats cannot duplicate the main stat")
 
-        return self
+    #     return self

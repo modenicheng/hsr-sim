@@ -1,0 +1,22 @@
+{
+  "id": 0,
+  "name": "genius_of_brilliant_stars_hands",
+  "relic_set": {
+    "id": 0,
+    "name": "genius_of_brilliant_stars",
+    "passive_2_pc": {
+      "id": 0,
+      "name": "genius_of_brilliant_stars_2_pc",
+      "description": "TODO: fill 2-piece bonus for genius_of_brilliant_stars",
+      "script": "genius_of_brilliant_stars_2_pc"
+    },
+    "passive_4_pc": {
+      "id": 0,
+      "name": "genius_of_brilliant_stars_4_pc",
+      "description": "TODO: fill 4-piece bonus for genius_of_brilliant_stars",
+      "script": "genius_of_brilliant_stars_4_pc"
+    }
+  },
+  "slot": "hands",
+  "story": "TODO: fill story for hands"
+}

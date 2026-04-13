@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from .enums import StatType, Element
+from .eidolon import EidolonConfig
 from .skill import SkillConfig
 
 class Memosprite(BaseModel):
@@ -25,7 +26,7 @@ class CharacterConfig(BaseModel):
     basic_atk: SkillConfig  # 普攻
     skill: SkillConfig  # 战技
     ultimate: SkillConfig  # 终结技
-    eidolon_ids: list[int] = []  # 星魂
+    eidolons: list[EidolonConfig] = []  # 星魂
     talent_ids: list[int] = []  # 天赋
     technique_id: int  # 秘技
     bonus_ability_ids: list[int] = []  # 额外能力

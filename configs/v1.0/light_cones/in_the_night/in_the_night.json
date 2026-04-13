@@ -1,0 +1,13 @@
+{
+  "id": 0,
+  "name": "in_the_night",
+  "rarity": 5,
+  "path": "hunt",
+  "story": "TODO: fill story for in_the_night",
+  "passive_skill": {
+    "id": 0,
+    "name": "in_the_night_passive",
+    "description": "TODO: fill passive skill for in_the_night",
+    "script": "light_cones/in_the_night"
+  }
+}
