@@ -31,14 +31,17 @@ RELIC_4PC_PASSIVE_ID_RANGE = (23000000, 23999999)
 
 def _validate_name(value: str) -> str:
     if not re.fullmatch(r"[A-Za-z_]+", value):
-        raise ValueError("Relic set name only allows English characters and underscores (_)。")
+        raise ValueError(
+            "Relic set name only allows English characters and underscores (_)。"
+        )
     return value
 
 
 def _normalize_version(value: str) -> str:
     matched = re.fullmatch(r"v?(\d+\.\d+)", value)
     if not matched:
-        raise ValueError("version format only supports x.x or vx.x (e.g., 1.0 / v1.0).")
+        raise ValueError(
+            "version format only supports x.x or vx.x (e.g., 1.0 / v1.0).")
     return f"v{matched.group(1)}"
 
 
@@ -47,7 +50,8 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "names",
         nargs="+",
-        help="One or more relic set names (English characters and underscores only)",
+        help=
+        "One or more relic set names (English characters and underscores only)",
     )
     parser.add_argument(
         "--version",
@@ -66,7 +70,8 @@ def parse_args() -> Namespace:
         dest="set_type",
         required=True,
         choices=["relics", "planar_ornaments"],
-        help="Set type: relics=outer circle relics, planar_ornaments=planar ornaments.",
+        help=
+        "Set type: relics=outer circle relics, planar_ornaments=planar ornaments.",
     )
 
     args = parser.parse_args()
@@ -92,19 +97,19 @@ def _write_json(path: Path, payload: dict) -> None:
 
 def _slot_list(set_type: str) -> list[RelicSlot]:
     if set_type == "relics":
-        return [RelicSlot.HEAD, RelicSlot.HANDS, RelicSlot.TORSO, RelicSlot.FEET]
+        return [
+            RelicSlot.HEAD, RelicSlot.HANDS, RelicSlot.TORSO, RelicSlot.FEET
+        ]
     return [RelicSlot.PLANAR_SPHERE, RelicSlot.LINK_ROPE]
 
 
 def _script_template(set_name: str, script_name: str) -> str:
-    return (
-        f'"""{set_name} {script_name} script."""\n\n'
-        "\n"
-        "def apply(context):\n"
-        "    \"\"\"TODO: implement set bonus behavior.\"\"\"\n"
-        "    _ = context\n"
-        "\n"
-    )
+    return (f'"""{set_name} {script_name} script."""\n\n'
+            "\n"
+            "def apply(context):\n"
+            "    \"\"\"TODO: implement set bonus behavior.\"\"\"\n"
+            "    _ = context\n"
+            "\n")
 
 
 def _extract_ids(payload: Any) -> list[int]:
@@ -135,9 +140,14 @@ def _collect_version_ids(version: str) -> list[int]:
     return ids
 
 
-def _allocate_ids(version: str, id_range: tuple[int, int], count: int = 1) -> list[int]:
+def _allocate_ids(version: str,
+                  id_range: tuple[int, int],
+                  count: int = 1) -> list[int]:
     lower, upper = id_range
-    existing = [value for value in _collect_version_ids(version) if lower <= value <= upper]
+    existing = [
+        value for value in _collect_version_ids(version)
+        if lower <= value <= upper
+    ]
     start = max(existing, default=lower - 1) + 1
     end = start + count - 1
     if end > upper:
@@ -161,7 +171,10 @@ def _build_relic_payload(
     return relic.model_dump(mode="json")
 
 
-def run_create_relic_set(name: str, version: str, set_type: str, force: bool = False) -> None:
+def run_create_relic_set(name: str,
+                         version: str,
+                         set_type: str,
+                         force: bool = False) -> None:
     set_dir = CONFIGS_DIR / version / "relics" / name
 
     if set_dir.exists():

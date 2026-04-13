@@ -299,7 +299,7 @@ flowchart LR
 
 ### 7.1 代码风格
 
-- 遵循 PEP 8，使用 Ruff 进行 lint 和格式化。
+- 遵循 Google Python Style，使用 Ruff 进行 lint 和格式化。
 - 类型注解必须完整（函数参数、返回值）。
 - 使用 `pydantic.Field` 进行字段约束和描述。
 

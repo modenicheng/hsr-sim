@@ -8,6 +8,26 @@
 uv sync
 ```
 
+## Code quality (prek)
+
+项目使用 `prek` 管理 Git hooks（见根目录 `prek.toml`）：
+
+- `ruff-check --fix` + `ruff-format`：统一 Python 代码风格与格式（Google 风格 docstring 约定）
+- `conventional-pre-commit`：在 `commit-msg` 阶段校验 Conventional Commit
+- 内置基础检查：如尾随空格、文件结尾换行、私钥检测等
+
+首次启用（Windows 可用 `uv tool install prek` 或 `winget install --id j178.Prek` 安装）：
+
+```sh
+prek install -f --prepare-hooks
+```
+
+手动全量执行：
+
+```sh
+prek run --all-files
+```
+
 ## Run the project
 
 项目使用了 src 布局，所以需要使用模块的方式启动：
