@@ -28,12 +28,22 @@ import json
 from pathlib import Path
 import re
 import shutil
+from typing import Any
 
 from hsr_sim.core.config import CONFIGS_DIR
 from hsr_sim.models.schemas.character import CharacterConfig
 from hsr_sim.models.schemas.eidolon import EidolonConfig
 from hsr_sim.models.schemas.skill import SkillConfig
 from hsr_sim.models.schemas.enums import Element, SkillType, StatType
+
+CHARACTER_ID_RANGE = (10000000, 10999999)
+BASIC_ATK_ID_RANGE = (11000000, 11999999)
+SKILL_ID_RANGE = (12000000, 12999999)
+ULTIMATE_ID_RANGE = (13000000, 13999999)
+EIDOLON_ID_RANGE = (14000000, 14999999)
+TALENT_ID_RANGE = (15000000, 15999999)
+TECHNIQUE_ID_RANGE = (16000000, 16999999)
+BONUS_ABILITY_ID_RANGE = (17000000, 17999999)
 
 
 def _validate_character_name(value: str) -> str:
@@ -57,8 +67,9 @@ def _normalize_version(value: str) -> str:
 def parse_args() -> Namespace:
     parser = ArgumentParser(description="Create character config CLI")
     parser.add_argument(
-        "character_name",
-        help="Character name (English letters and underscores only)",
+        "character_names",
+        nargs="+",
+        help="One or more character names (English letters and underscores only)",
     )
     parser.add_argument(
         "--version",
@@ -75,7 +86,7 @@ def parse_args() -> Namespace:
     args = parser.parse_args()
 
     try:
-        args.character_name = _validate_character_name(args.character_name)
+        args.character_names = [_validate_character_name(name) for name in args.character_names]
         args.version = _normalize_version(args.version)
     except ValueError as exc:
         parser.error(str(exc))
@@ -109,6 +120,44 @@ def _make_empty_script_template(title: str) -> str:
             "    \"\"\"TODO: implement behavior.\"\"\"\n"
             "    _ = context\n"
             "\n")
+
+
+def _extract_ids(payload: Any) -> list[int]:
+    ids: list[int] = []
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key == "id" and isinstance(value, int):
+                ids.append(value)
+            ids.extend(_extract_ids(value))
+    elif isinstance(payload, list):
+        for item in payload:
+            ids.extend(_extract_ids(item))
+    return ids
+
+
+def _collect_version_ids(version: str) -> list[int]:
+    version_dir = CONFIGS_DIR / version
+    if not version_dir.exists():
+        return []
+
+    ids: list[int] = []
+    for json_path in version_dir.rglob("*.json"):
+        try:
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        ids.extend(_extract_ids(payload))
+    return ids
+
+
+def _allocate_ids(version: str, id_range: tuple[int, int], count: int = 1) -> list[int]:
+    lower, upper = id_range
+    existing = [value for value in _collect_version_ids(version) if lower <= value <= upper]
+    start = max(existing, default=lower - 1) + 1
+    end = start + count - 1
+    if end > upper:
+        raise ValueError(f"ID range exhausted: {lower}-{upper}")
+    return list(range(start, end + 1))
 
 
 def run_create_character(
@@ -173,9 +222,18 @@ def run_create_character(
 
     created_files: list[Path] = []
 
+    character_id = _allocate_ids(version, CHARACTER_ID_RANGE, 1)[0]
+    basic_atk_id = _allocate_ids(version, BASIC_ATK_ID_RANGE, 1)[0]
+    skill_id = _allocate_ids(version, SKILL_ID_RANGE, 1)[0]
+    ultimate_id = _allocate_ids(version, ULTIMATE_ID_RANGE, 1)[0]
+    eidolon_ids = _allocate_ids(version, EIDOLON_ID_RANGE, 6)
+    talent_id = _allocate_ids(version, TALENT_ID_RANGE, 1)[0]
+    technique_id = _allocate_ids(version, TECHNIQUE_ID_RANGE, 1)[0]
+    bonus_ability_ids = _allocate_ids(version, BONUS_ABILITY_ID_RANGE, 3)
+
     character_json_path = char_dir / f"{character_name}.json"
     basic_atk_skill = SkillConfig(
-        id=0,
+        id=basic_atk_id,
         name=f"{character_name}_{SkillType.BASIC.value}",
         type=SkillType.BASIC,
         description="TODO: fill description",
@@ -184,7 +242,7 @@ def run_create_character(
         script=f"skills/{character_name}_basic_atk",
     )
     skill = SkillConfig(
-        id=0,
+        id=skill_id,
         name=f"{character_name}_{SkillType.SKILL.value}",
         type=SkillType.SKILL,
         description="TODO: fill description",
@@ -193,7 +251,7 @@ def run_create_character(
         script=f"skills/{character_name}_skill",
     )
     ultimate = SkillConfig(
-        id=0,
+        id=ultimate_id,
         name=f"{character_name}_{SkillType.ULTIMATE.value}",
         type=SkillType.ULTIMATE,
         description="TODO: fill description",
@@ -206,7 +264,7 @@ def run_create_character(
     for i in range(1, 7):
         eidolons.append(
             EidolonConfig(
-                id=0,
+                id=eidolon_ids[i - 1],
                 index=i,
                 name=f"{character_name}_eidolon_{i}",
                 describe="TODO: fill eidolon describe",
@@ -214,7 +272,7 @@ def run_create_character(
             ))
 
     character = CharacterConfig(
-        id=0,
+        id=character_id,
         name=character_name,
         rarity=5,
         element=Element.QUANTUM,
@@ -226,28 +284,28 @@ def run_create_character(
         skill=skill,
         ultimate=ultimate,
         eidolons=eidolons,
-        talent_ids=[0],
-        technique_id=0,
-        bonus_ability_ids=[0],
+        talent_ids=[talent_id],
+        technique_id=technique_id,
+        bonus_ability_ids=bonus_ability_ids,
         stat_bonus={StatType.ATK_PERCENT: 0.0},
     )
 
     payload = character.model_dump(mode="json")
     payload["talents"] = [{
-        "id": 0,
+        "id": talent_id,
         "name": f"{character_name}_talent",
         "description": "TODO: fill talent description",
         "script": f"talent/{character_name}_talent",
     }]
     payload["technique"] = {
-        "id": 0,
+        "id": technique_id,
         "name": f"{character_name}_technique",
         "description": "TODO: fill technique description",
         "script": f"technique/{character_name}_technique",
     }
     payload["bonus_abilities"] = [{
         "id":
-        0,
+        bonus_ability_ids[i - 1],
         "name":
         f"{character_name}_bonus_ability_{i}",
         "description":
@@ -261,7 +319,7 @@ def run_create_character(
 
     skill_file_stems = ["basic_atk", "skill", "ultimate"]
     for file_stem in skill_file_stems:
-        py_path = skills_dir / f"{file_stem}_{character_name}.py"
+        py_path = skills_dir / f"{character_name}_{file_stem}.py"
         _write_text(
             py_path,
             _make_skill_script_template(character_name, file_stem),
@@ -305,7 +363,17 @@ def run_create_character(
 
 def main() -> None:
     args = parse_args()
-    run_create_character(args.character_name, args.version, args.force)
+    failures: list[tuple[str, str]] = []
+    for character_name in args.character_names:
+        try:
+            run_create_character(character_name, args.version, args.force)
+        except Exception as exc:  # noqa: BLE001
+            failures.append((character_name, str(exc)))
+
+    if failures:
+        lines = ["Batch creation finished with errors:"]
+        lines.extend([f"- {name}: {message}" for name, message in failures])
+        raise RuntimeError("\n".join(lines))
 
 
 if __name__ == "__main__":

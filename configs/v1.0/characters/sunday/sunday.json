@@ -1,6 +1,6 @@
 {
-  "id": 10000000,
-  "name": "seele",
+  "id": 10000001,
+  "name": "sunday",
   "rarity": 5,
   "element": "quantum",
   "base_hp": 1000.0,
@@ -8,84 +8,84 @@
   "base_def": 500.0,
   "base_spd": 100.0,
   "basic_atk": {
-    "id": 11000000,
-    "name": "seele_basic",
+    "id": 11000001,
+    "name": "sunday_basic",
     "type": "basic",
     "description": "TODO: fill description",
     "target_type": "single_target",
     "energy_gain": 0.0,
-    "script": "skills/seele_basic_atk"
+    "script": "skills/sunday_basic_atk"
   },
   "skill": {
-    "id": 12000000,
-    "name": "seele_skill",
+    "id": 12000001,
+    "name": "sunday_skill",
     "type": "skill",
     "description": "TODO: fill description",
     "target_type": "single_target",
     "energy_gain": 0.0,
-    "script": "skills/seele_skill"
+    "script": "skills/sunday_skill"
   },
   "ultimate": {
-    "id": 13000000,
-    "name": "seele_ultimate",
+    "id": 13000001,
+    "name": "sunday_ultimate",
     "type": "ultimate",
     "description": "TODO: fill description",
     "target_type": "single_target",
     "energy_gain": 0.0,
-    "script": "skills/seele_ultimate"
+    "script": "skills/sunday_ultimate"
   },
   "eidolons": [
     {
-      "id": 14000000,
+      "id": 14000006,
       "index": 1,
-      "name": "seele_eidolon_1",
+      "name": "sunday_eidolon_1",
       "describe": "TODO: fill eidolon describe",
-      "script": "eidolons/seele_eidolon_1"
+      "script": "eidolons/sunday_eidolon_1"
     },
     {
-      "id": 14000001,
+      "id": 14000007,
       "index": 2,
-      "name": "seele_eidolon_2",
+      "name": "sunday_eidolon_2",
       "describe": "TODO: fill eidolon describe",
-      "script": "eidolons/seele_eidolon_2"
+      "script": "eidolons/sunday_eidolon_2"
     },
     {
-      "id": 14000002,
+      "id": 14000008,
       "index": 3,
-      "name": "seele_eidolon_3",
+      "name": "sunday_eidolon_3",
       "describe": "TODO: fill eidolon describe",
-      "script": "eidolons/seele_eidolon_3"
+      "script": "eidolons/sunday_eidolon_3"
     },
     {
-      "id": 14000003,
+      "id": 14000009,
       "index": 4,
-      "name": "seele_eidolon_4",
+      "name": "sunday_eidolon_4",
       "describe": "TODO: fill eidolon describe",
-      "script": "eidolons/seele_eidolon_4"
+      "script": "eidolons/sunday_eidolon_4"
     },
     {
-      "id": 14000004,
+      "id": 14000010,
       "index": 5,
-      "name": "seele_eidolon_5",
+      "name": "sunday_eidolon_5",
       "describe": "TODO: fill eidolon describe",
-      "script": "eidolons/seele_eidolon_5"
+      "script": "eidolons/sunday_eidolon_5"
     },
     {
-      "id": 14000005,
+      "id": 14000011,
       "index": 6,
-      "name": "seele_eidolon_6",
+      "name": "sunday_eidolon_6",
       "describe": "TODO: fill eidolon describe",
-      "script": "eidolons/seele_eidolon_6"
+      "script": "eidolons/sunday_eidolon_6"
     }
   ],
   "talent_ids": [
-    15000000
+    15000001
   ],
-  "technique_id": 16000000,
+  "technique_id": 16000001,
   "bonus_ability_ids": [
-    17000000,
-    17000001,
-    17000002
+    17000003,
+    17000004,
+    17000005
   ],
   "stat_bonus": {
     "atk_percent": 0.0
@@ -94,36 +94,36 @@
   "memosprite": null,
   "talents": [
     {
-      "id": 15000000,
-      "name": "seele_talent",
+      "id": 15000001,
+      "name": "sunday_talent",
       "description": "TODO: fill talent description",
-      "script": "talent/seele_talent"
+      "script": "talent/sunday_talent"
     }
   ],
   "technique": {
-    "id": 16000000,
-    "name": "seele_technique",
+    "id": 16000001,
+    "name": "sunday_technique",
     "description": "TODO: fill technique description",
-    "script": "technique/seele_technique"
+    "script": "technique/sunday_technique"
   },
   "bonus_abilities": [
     {
-      "id": 17000000,
-      "name": "seele_bonus_ability_1",
+      "id": 17000003,
+      "name": "sunday_bonus_ability_1",
       "description": "TODO: fill bonus ability description",
-      "script": "bonus_ability/seele_bonus_ability_1"
+      "script": "bonus_ability/sunday_bonus_ability_1"
     },
     {
-      "id": 17000001,
-      "name": "seele_bonus_ability_2",
+      "id": 17000004,
+      "name": "sunday_bonus_ability_2",
       "description": "TODO: fill bonus ability description",
-      "script": "bonus_ability/seele_bonus_ability_2"
+      "script": "bonus_ability/sunday_bonus_ability_2"
     },
     {
-      "id": 17000002,
-      "name": "seele_bonus_ability_3",
+      "id": 17000005,
+      "name": "sunday_bonus_ability_3",
       "description": "TODO: fill bonus ability description",
-      "script": "bonus_ability/seele_bonus_ability_3"
+      "script": "bonus_ability/sunday_bonus_ability_3"
     }
   ]
 }

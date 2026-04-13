@@ -1,0 +1,16 @@
+{
+  "id": 30000000,
+  "name": "a_grounded_ascent",
+  "rarity": 5,
+  "path": "hunt",
+  "base_hp": 0.0,
+  "base_atk": 0.0,
+  "base_def": 0.0,
+  "story": "TODO: fill story for a_grounded_ascent",
+  "passive_skill": {
+    "id": 31000000,
+    "name": "a_grounded_ascent_passive",
+    "description": "TODO: fill passive skill for a_grounded_ascent",
+    "script": "light_cones/a_grounded_ascent"
+  }
+}

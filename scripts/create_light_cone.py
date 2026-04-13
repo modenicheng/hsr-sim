@@ -13,11 +13,15 @@ import json
 from pathlib import Path
 import re
 import shutil
+from typing import Any
 
 from hsr_sim.core.config import CONFIGS_DIR
 from hsr_sim.models.schemas.enums import Path as GamePath
 from hsr_sim.models.schemas.light_cone import LightConeConfig
 from hsr_sim.models.schemas.passive import PassiveSkillConfig
+
+LIGHT_CONE_ID_RANGE = (30000000, 30999999)
+LIGHT_CONE_PASSIVE_ID_RANGE = (31000000, 31999999)
 
 
 def _validate_name(value: str) -> str:
@@ -36,8 +40,9 @@ def _normalize_version(value: str) -> str:
 def parse_args() -> Namespace:
     parser = ArgumentParser(description="Create light cone config CLI")
     parser.add_argument(
-        "name",
-        help="Name of the light cone (English characters and underscores only)"
+        "names",
+        nargs="+",
+        help="One or more light cone names (English characters and underscores only)",
     )
     parser.add_argument(
         "--version",
@@ -55,7 +60,7 @@ def parse_args() -> Namespace:
     args = parser.parse_args()
 
     try:
-        args.name = _validate_name(args.name)
+        args.names = [_validate_name(name) for name in args.names]
         args.version = _normalize_version(args.version)
     except ValueError as exc:
         parser.error(str(exc))
@@ -82,15 +87,53 @@ def _script_template(name: str) -> str:
             "\n")
 
 
-def _build_light_cone_payload(name: str) -> dict:
+def _extract_ids(payload: Any) -> list[int]:
+    ids: list[int] = []
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key == "id" and isinstance(value, int):
+                ids.append(value)
+            ids.extend(_extract_ids(value))
+    elif isinstance(payload, list):
+        for item in payload:
+            ids.extend(_extract_ids(item))
+    return ids
+
+
+def _collect_version_ids(version: str) -> list[int]:
+    version_dir = CONFIGS_DIR / version
+    if not version_dir.exists():
+        return []
+
+    ids: list[int] = []
+    for json_path in version_dir.rglob("*.json"):
+        try:
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        ids.extend(_extract_ids(payload))
+    return ids
+
+
+def _allocate_ids(version: str, id_range: tuple[int, int], count: int = 1) -> list[int]:
+    lower, upper = id_range
+    existing = [value for value in _collect_version_ids(version) if lower <= value <= upper]
+    start = max(existing, default=lower - 1) + 1
+    end = start + count - 1
+    if end > upper:
+        raise ValueError(f"ID range exhausted: {lower}-{upper}")
+    return list(range(start, end + 1))
+
+
+def _build_light_cone_payload(name: str, light_cone_id: int, passive_id: int) -> dict:
     light_cone = LightConeConfig(
-        id=0,
+        id=light_cone_id,
         name=name,
         rarity=5,
         path=GamePath.HUNT,
         story=f"TODO: fill story for {name}",
         passive_skill=PassiveSkillConfig(
-            id=0,
+            id=passive_id,
             name=f"{name}_passive",
             description=f"TODO: fill passive skill for {name}",
             script=f"light_cones/{name}",
@@ -118,10 +161,13 @@ def run_create_light_cone(name: str,
 
     cone_dir.mkdir(parents=True, exist_ok=True)
 
+    light_cone_id = _allocate_ids(version, LIGHT_CONE_ID_RANGE, 1)[0]
+    passive_id = _allocate_ids(version, LIGHT_CONE_PASSIVE_ID_RANGE, 1)[0]
+
     json_path = cone_dir / f"{name}.json"
     py_path = cone_dir / f"{name}.py"
 
-    _write_json(json_path, _build_light_cone_payload(name))
+    _write_json(json_path, _build_light_cone_payload(name, light_cone_id, passive_id))
     _write_text(py_path, _script_template(name))
 
     print(f"Created 2 files under: {cone_dir}")
@@ -129,7 +175,17 @@ def run_create_light_cone(name: str,
 
 def main() -> None:
     args = parse_args()
-    run_create_light_cone(args.name, args.version, args.force)
+    failures: list[tuple[str, str]] = []
+    for name in args.names:
+        try:
+            run_create_light_cone(name, args.version, args.force)
+        except Exception as exc:  # noqa: BLE001
+            failures.append((name, str(exc)))
+
+    if failures:
+        lines = ["Batch creation finished with errors:"]
+        lines.extend([f"- {name}: {message}" for name, message in failures])
+        raise RuntimeError("\n".join(lines))
 
 
 if __name__ == "__main__":
