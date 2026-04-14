@@ -1,0 +1,11 @@
+{
+  "id": 50000009,
+  "name": "effect_hit_rate_boost",
+  "description": "TODO: fill description for effect_hit_rate_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/effect_hit_rate_boost/effect_hit_rate_boost",
+  "params": {}
+}

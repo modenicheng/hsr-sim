@@ -1,0 +1,11 @@
+{
+  "id": 50000007,
+  "name": "energy_regen_boost",
+  "description": "TODO: fill description for energy_regen_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/energy_regen_boost/energy_regen_boost",
+  "params": {}
+}

@@ -1,0 +1,11 @@
+{
+  "id": 50000005,
+  "name": "crit_damage_boost",
+  "description": "TODO: fill description for crit_damage_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/crit_damage_boost/crit_damage_boost",
+  "params": {}
+}

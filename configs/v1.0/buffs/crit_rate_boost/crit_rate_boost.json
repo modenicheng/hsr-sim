@@ -1,0 +1,11 @@
+{
+  "id": 50000004,
+  "name": "crit_rate_boost",
+  "description": "TODO: fill description for crit_rate_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/crit_rate_boost/crit_rate_boost",
+  "params": {}
+}

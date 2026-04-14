@@ -1,0 +1,11 @@
+{
+  "id": 50000000,
+  "name": "hp_boost",
+  "description": "TODO: fill description for hp_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/hp_boost/hp_boost",
+  "params": {}
+}

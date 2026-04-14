@@ -1,0 +1,11 @@
+{
+  "id": 50000006,
+  "name": "break_effect_boost",
+  "description": "TODO: fill description for break_effect_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/break_effect_boost/break_effect_boost",
+  "params": {}
+}

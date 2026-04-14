@@ -1,0 +1,11 @@
+{
+  "id": 50000008,
+  "name": "outgoing_healing_boost",
+  "description": "TODO: fill description for outgoing_healing_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/outgoing_healing_boost/outgoing_healing_boost",
+  "params": {}
+}

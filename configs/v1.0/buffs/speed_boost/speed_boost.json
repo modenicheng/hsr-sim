@@ -1,0 +1,11 @@
+{
+  "id": 50000003,
+  "name": "speed_boost",
+  "description": "TODO: fill description for speed_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/speed_boost/speed_boost",
+  "params": {}
+}

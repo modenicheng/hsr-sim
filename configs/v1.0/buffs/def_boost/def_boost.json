@@ -1,0 +1,11 @@
+{
+  "id": 50000002,
+  "name": "def_boost",
+  "description": "TODO: fill description for def_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/def_boost/def_boost",
+  "params": {}
+}

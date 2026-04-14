@@ -1,0 +1,11 @@
+{
+  "id": 50000010,
+  "name": "effect_res_boost",
+  "description": "TODO: fill description for effect_res_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/effect_res_boost/effect_res_boost",
+  "params": {}
+}

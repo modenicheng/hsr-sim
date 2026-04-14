@@ -1,0 +1,11 @@
+{
+  "id": 50000001,
+  "name": "atk_boost",
+  "description": "TODO: fill description for atk_boost",
+  "scope": "global",
+  "max_stacks": 1,
+  "default_duration": 1,
+  "dispelable": false,
+  "script": "buffs/atk_boost/atk_boost",
+  "params": {}
+}
