@@ -203,6 +203,15 @@ class ConfigLoader:
         return sorted(self._cache["characters"].get(name, {}).keys(),
                       key=self._parse_version)
 
+    def get_all_characters(self) -> list[CharacterConfig]:
+        """返回所有角色配置（最新版本）"""
+        all_characters: list[CharacterConfig] = []
+        for name in sorted(self._cache["characters"].keys()):
+            latest = self._get_latest(self._cache["characters"][name], None)
+            if latest and isinstance(latest.get("config"), CharacterConfig):
+                all_characters.append(latest["config"])
+        return all_characters
+
     def get_light_cone(self,
                        name: str,
                        version: str | None = None) -> dict[str, Any] | None:

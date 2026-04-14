@@ -10,3 +10,8 @@ class EquippedRelicsComponent(BaseModel):
     feet: int | None = None
     planar_sphere: int | None = None
     link_rope: int | None = None
+
+
+class EquippedLightConeComponent(BaseModel):
+    """角色当前装备的光锥实例ID"""
+    light_cone_id: int | None = None

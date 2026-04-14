@@ -13,6 +13,9 @@ dependencies = [
     "pydantic>=2.12.5",
     "rich>=14.3.4",
     "sqlalchemy>=2.0.49",
+    "textual-dev>=1.8.0",
+    "textual-plotext>=1.0.1",
+    "textual[syntax]>=8.2.3",
 ]
 
 [build-system]

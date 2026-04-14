@@ -51,3 +51,14 @@ def create_character_from_config(char_name: str, version: str) -> int:
                                    version=version))
 
     return entity
+
+def load_character_from_db(user_character):
+    """根据数据库中的用户角色数据创建角色实体，返回实体ID.
+
+    :param user_character: 数据库中的用户角色对象
+    :return: 创建的实体ID
+    """
+    # 这里的实现会根据数据库模型的具体结构而有所不同
+    # 需要从user_character中提取必要的信息，如角色配置ID、版本等
+    # 然后调用create_character_from_config或类似的方法来创建实体
+    pass  # 具体实现待定

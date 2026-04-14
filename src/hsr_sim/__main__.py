@@ -1,3 +1,11 @@
-from .logger import get_logger
+# src/hsr_sim/__main__.py
+from src.hsr_sim.ui.app import HSRSimApp
 
-logger = get_logger( __name__)
+
+def main():
+    app = HSRSimApp()
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
