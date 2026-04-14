@@ -3,7 +3,7 @@
 Usage:
 
 - `create_buff <buff_name>`
-- `create_buff overload <character_name> <buff_name>`
+- `create_buff overload <character_name> <buff_name> --character-id <id>`
 
 Default directory looks like:
 CONFIGS_DIR/
@@ -65,6 +65,12 @@ def parse_args() -> Namespace:
         help="Config version (supports x.x or vx.x, default v1.0)",
     )
     parser.add_argument(
+        "--character-id",
+        type=int,
+        default=None,
+        help="Character config id, required in overload mode.",
+    )
+    parser.add_argument(
         "-f",
         "--force",
         action="store_true",
@@ -84,6 +90,8 @@ def parse_args() -> Namespace:
             args.mode = "character"
             args.character_name = _validate_name(args.parts[1])
             args.buff_name = _validate_name(args.parts[2])
+            if args.character_id is None:
+                raise ValueError("overload mode requires --character-id")
         else:
             if len(args.parts) != 1:
                 raise ValueError("global mode requires: <buff_name>")
@@ -111,7 +119,7 @@ def _build_buff_payload(
     buff_id: int,
     script_path: str,
     mode: str,
-    character_name: str | None,
+    character_id: int | None,
 ) -> dict:
     payload = {
         "id": buff_id,
@@ -124,8 +132,8 @@ def _build_buff_payload(
         "script": script_path,
         "params": {},
     }
-    if character_name is not None:
-        payload["character_name"] = character_name
+    if character_id is not None:
+        payload["character_id"] = character_id
     return payload
 
 
@@ -134,8 +142,12 @@ def run_create_buff(
     version: str,
     *,
     character_name: str | None = None,
+    character_id: int | None = None,
     force: bool = False,
 ) -> None:
+    if character_name is not None and character_id is None:
+        raise ValueError("character_id is required for character-scoped buff")
+
     if character_name is None:
         buff_dir = CONFIGS_DIR / version / "buffs" / buff_name
         buff_id = allocate_ids(
@@ -181,7 +193,7 @@ def run_create_buff(
             buff_id=buff_id,
             script_path=script_path,
             mode="character" if character_name else "global",
-            character_name=character_name,
+            character_id=character_id,
         ),
     )
     write_text(
@@ -202,6 +214,7 @@ def main() -> None:
             args.buff_name,
             args.version,
             character_name=args.character_name,
+            character_id=args.character_id,
             force=args.force,
         )
     except Exception as exc:  # noqa: BLE001

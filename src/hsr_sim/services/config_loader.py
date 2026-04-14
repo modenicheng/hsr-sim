@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from hsr_sim.core.config import CONFIGS_DIR
+from hsr_sim.models.schemas.buff import BuffConfig
 from hsr_sim.models.schemas.character import CharacterConfig
 from hsr_sim.models.schemas.light_cone import LightConeConfig
 from hsr_sim.models.schemas.relics import RelicConfig
@@ -30,8 +31,8 @@ class ConfigLoader:
             "relics": {},
             "buffs": {},
         }
-        self._character_buff_cache: dict[str, dict[str, dict[str, dict[str, Any]]]] = {}
-        self._character_buff_id_cache: dict[str, dict[int, dict[str, dict[str, Any]]]] = {}
+        self._character_buff_cache: dict[int, dict[str, dict[str, dict[str, Any]]]] = {}
+        self._character_buff_id_cache: dict[int, dict[int, dict[str, dict[str, Any]]]] = {}
         self._versions: list[str] = []
         self._scan_versions()
         self._load_all()
@@ -124,7 +125,14 @@ class ConfigLoader:
         for char_dir in chars_root.iterdir():
             if not char_dir.is_dir():
                 continue
-            self._load_buffs(version, char_dir / "buffs", character_name=char_dir.name)
+            char_dataset = self._cache["characters"].get(char_dir.name, {})
+            char_payload = char_dataset.get(version)
+            if not char_payload:
+                continue
+            char_config = char_payload.get("config")
+            if not isinstance(char_config, CharacterConfig):
+                continue
+            self._load_buffs(version, char_dir / "buffs", character_id=char_config.id)
 
     def _collect_character_scripts(
         self,
@@ -250,7 +258,7 @@ class ConfigLoader:
         self,
         version: str,
         buffs_root: Path,
-        character_name: str | None = None,
+        character_id: int | None = None,
     ) -> None:
         if not buffs_root.exists():
             return
@@ -259,52 +267,55 @@ class ConfigLoader:
             payload = self._load_json(json_file)
             if payload is None:
                 continue
+            try:
+                buff_config = BuffConfig.model_validate(payload)
+            except ValidationError:
+                continue
 
             buff_name = json_file.stem
             scripts: dict[str, str] = {}
             for script_file in sorted(json_file.parent.glob("*.py")):
                 scripts[script_file.stem] = self._build_module_path(version, script_file)
 
-            buff_id = payload.get("id") if isinstance(payload.get("id"), int) else None
-            cache_payload = {"config": payload, "scripts": scripts}
-            if character_name is None:
+            cache_payload = {"config": buff_config, "scripts": scripts}
+            if character_id is None:
                 self._put_cache(
                     dataset="buffs",
                     name=buff_name,
                     version=version,
                     payload=cache_payload,
-                    entity_id=buff_id,
+                    entity_id=buff_config.id,
                 )
             else:
                 self._put_character_buff_cache(
-                    character_name=character_name,
+                    character_id=character_id,
                     name=buff_name,
                     version=version,
                     payload=cache_payload,
-                    entity_id=buff_id,
+                    entity_id=buff_config.id,
                 )
 
     def _put_character_buff_cache(
         self,
         *,
-        character_name: str,
+        character_id: int,
         name: str,
         version: str,
         payload: dict[str, Any],
         entity_id: int | None = None,
     ) -> None:
-        if character_name not in self._character_buff_cache:
-            self._character_buff_cache[character_name] = {}
-        if name not in self._character_buff_cache[character_name]:
-            self._character_buff_cache[character_name][name] = {}
-        self._character_buff_cache[character_name][name][version] = payload
+        if character_id not in self._character_buff_cache:
+            self._character_buff_cache[character_id] = {}
+        if name not in self._character_buff_cache[character_id]:
+            self._character_buff_cache[character_id][name] = {}
+        self._character_buff_cache[character_id][name][version] = payload
 
         if entity_id is not None:
-            if character_name not in self._character_buff_id_cache:
-                self._character_buff_id_cache[character_name] = {}
-            if entity_id not in self._character_buff_id_cache[character_name]:
-                self._character_buff_id_cache[character_name][entity_id] = {}
-            self._character_buff_id_cache[character_name][entity_id][version] = payload
+            if character_id not in self._character_buff_id_cache:
+                self._character_buff_id_cache[character_id] = {}
+            if entity_id not in self._character_buff_id_cache[character_id]:
+                self._character_buff_id_cache[character_id][entity_id] = {}
+            self._character_buff_id_cache[character_id][entity_id][version] = payload
 
     def _load_json(self, path: Path) -> dict[str, Any] | None:
         try:
@@ -404,10 +415,10 @@ class ConfigLoader:
         self,
         name: str,
         version: str | None = None,
-        character_name: str | None = None,
+        character_id: int | None = None,
     ) -> dict[str, Any] | None:
-        if character_name:
-            character_dataset = self._character_buff_cache.get(character_name, {}).get(name, {})
+        if character_id is not None:
+            character_dataset = self._character_buff_cache.get(character_id, {}).get(name, {})
             if version:
                 latest = character_dataset.get(version)
                 if latest is not None:
@@ -422,10 +433,10 @@ class ConfigLoader:
         self,
         buff_id: int,
         version: str | None = None,
-        character_name: str | None = None,
+        character_id: int | None = None,
     ) -> dict[str, Any] | None:
-        if character_name:
-            character_dataset = self._character_buff_id_cache.get(character_name, {}).get(buff_id, {})
+        if character_id is not None:
+            character_dataset = self._character_buff_id_cache.get(character_id, {}).get(buff_id, {})
             if version:
                 latest = character_dataset.get(version)
                 if latest is not None:
@@ -439,28 +450,28 @@ class ConfigLoader:
     def get_buff_versions(
         self,
         name: str,
-        character_name: str | None = None,
+        character_id: int | None = None,
     ) -> list[str]:
-        if character_name:
-            dataset = self._character_buff_cache.get(character_name, {}).get(name)
+        if character_id is not None:
+            dataset = self._character_buff_cache.get(character_id, {}).get(name)
             if dataset:
                 return sorted(dataset.keys(), key=self._parse_version)
         return sorted(self._cache["buffs"].get(name, {}).keys(), key=self._parse_version)
 
-    def get_all_buffs(self, character_name: str | None = None) -> list[dict[str, Any]]:
-        if character_name:
-            all_buffs: list[dict[str, Any]] = []
-            character_dataset = self._character_buff_cache.get(character_name, {})
+    def get_all_buffs(self, character_id: int | None = None) -> list[BuffConfig]:
+        if character_id is not None:
+            all_buffs: list[BuffConfig] = []
+            character_dataset = self._character_buff_cache.get(character_id, {})
             for name in sorted(character_dataset.keys()):
                 latest = self._get_latest(character_dataset[name], None)
-                if latest and isinstance(latest.get("config"), dict):
+                if latest and isinstance(latest.get("config"), BuffConfig):
                     all_buffs.append(latest["config"])
             return all_buffs
 
-        all_buffs: list[dict[str, Any]] = []
+        all_buffs: list[BuffConfig] = []
         for name in sorted(self._cache["buffs"].keys()):
             latest = self._get_latest(self._cache["buffs"][name], None)
-            if latest and isinstance(latest.get("config"), dict):
+            if latest and isinstance(latest.get("config"), BuffConfig):
                 all_buffs.append(latest["config"])
         return all_buffs
 

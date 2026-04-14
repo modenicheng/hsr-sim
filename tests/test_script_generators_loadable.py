@@ -85,6 +85,7 @@ def test_buff_generator_outputs_loadable_character_script(tmp_path, monkeypatch)
         "epsilon_buff",
         "v1.0",
         character_name="alpha",
+        character_id=10000001,
     )
 
     loader = DynamicClassLoader()

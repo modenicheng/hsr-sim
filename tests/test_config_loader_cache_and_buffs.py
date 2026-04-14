@@ -1,6 +1,8 @@
 import importlib
 import json
 
+from hsr_sim.models.schemas.buff import BuffConfig
+
 config_loader_module = importlib.import_module("hsr_sim.services.config_loader")
 
 
@@ -119,7 +121,17 @@ def test_config_loader_supports_id_cache_and_buffs(tmp_path, monkeypatch):
     )
     _write_json(
         configs_root / version / "buffs" / "team_buff" / "team_buff.json",
-        {"id": 91001, "name": "team_buff", "kind": "atk_percent", "value": 0.12},
+        {
+            "id": 91001,
+            "name": "team_buff",
+            "description": "team buff",
+            "scope": "global",
+            "max_stacks": 1,
+            "default_duration": 2,
+            "dispelable": False,
+            "script": "buffs/team_buff/team_buff",
+            "params": {"atk_percent": 0.12},
+        },
     )
     (configs_root / version / "buffs" / "team_buff" / "team_buff.py").write_text(
         "", encoding="utf-8"
@@ -136,7 +148,10 @@ def test_config_loader_supports_id_cache_and_buffs(tmp_path, monkeypatch):
 
     buff = loader.get_buff("team_buff")
     assert buff is not None
-    assert buff["config"]["value"] == 0.12
+    assert isinstance(buff["config"], BuffConfig)
+    assert buff["config"].params["atk_percent"] == 0.12
+    assert buff["config"].default_duration == 2
+    assert buff["config"].name == "team_buff"
 
     buff_by_id = loader.get_buff_by_id(91001)
     assert buff_by_id is not None
@@ -159,7 +174,17 @@ def test_config_loader_prefers_character_specific_buff_over_global_buff(
 
     _write_json(
         configs_root / version / "buffs" / "common" / "spd_boost.json",
-        {"id": 91001, "name": "spd_boost", "kind": "spd_percent", "value": 0.12},
+        {
+            "id": 91001,
+            "name": "spd_boost",
+            "description": "global speed buff",
+            "scope": "global",
+            "max_stacks": 1,
+            "default_duration": 1,
+            "dispelable": True,
+            "script": "buffs/common/spd_boost",
+            "params": {"spd_percent": 0.12},
+        },
     )
     (configs_root / version / "buffs" / "common" / "spd_boost.py").write_text(
         "", encoding="utf-8"
@@ -173,7 +198,18 @@ def test_config_loader_prefers_character_specific_buff_over_global_buff(
         / "buffs"
         / "spd_boost"
         / "spd_boost.json",
-        {"id": 91001, "name": "spd_boost", "kind": "spd_percent", "value": 0.25},
+        {
+            "id": 91001,
+            "name": "spd_boost",
+            "description": "character speed buff",
+            "scope": "character",
+            "max_stacks": 2,
+            "default_duration": 3,
+            "dispelable": True,
+            "script": "characters/cache_char/buffs/spd_boost/spd_boost",
+            "params": {"spd_percent": 0.25},
+            "character_id": 10010001,
+        },
     )
     (
         configs_root
@@ -189,15 +225,18 @@ def test_config_loader_prefers_character_specific_buff_over_global_buff(
     loader = config_loader_module.ConfigLoader()
 
     global_buff = loader.get_buff("spd_boost")
-    override_buff = loader.get_buff("spd_boost", character_name=char_name)
-    override_buff_by_id = loader.get_buff_by_id(91001, character_name=char_name)
+    override_buff = loader.get_buff("spd_boost", character_id=10010001)
+    override_buff_by_id = loader.get_buff_by_id(91001, character_id=10010001)
 
     assert global_buff is not None
     assert override_buff is not None
     assert override_buff_by_id is not None
-    assert global_buff["config"]["value"] == 0.12
-    assert override_buff["config"]["value"] == 0.25
-    assert override_buff_by_id["config"]["value"] == 0.25
-    assert loader.get_buff_versions("spd_boost", character_name=char_name) == ["v1.0"]
+    assert isinstance(global_buff["config"], BuffConfig)
+    assert isinstance(override_buff["config"], BuffConfig)
+    assert isinstance(override_buff_by_id["config"], BuffConfig)
+    assert global_buff["config"].name == "spd_boost"
+    assert override_buff["config"].name == "spd_boost"
+    assert override_buff_by_id["config"].name == "spd_boost"
+    assert loader.get_buff_versions("spd_boost", character_id=10010001) == ["v1.0"]
     assert len(loader.get_all_buffs()) == 1
-    assert len(loader.get_all_buffs(character_name=char_name)) == 1
+    assert len(loader.get_all_buffs(character_id=10010001)) == 1
