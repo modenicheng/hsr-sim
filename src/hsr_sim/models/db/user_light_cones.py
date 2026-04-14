@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String, Index, ForeignKey
+from sqlalchemy import String, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
@@ -18,9 +18,9 @@ class UserLightCone(Base):
     level: Mapped[int] = mapped_column(default=80)
     superimpose: Mapped[int] = mapped_column(default=1)
     locked: Mapped[bool] = mapped_column(default=False)
-    equipped_by: Mapped[int | None] = mapped_column(ForeignKey(
-        "user_characters.id", ondelete="SET NULL"),
-                                                    nullable=True,
-                                                    unique=True)
     character: Mapped["UserCharacter | None"] = relationship(
-        "UserCharacter", back_populates="equipped_light_cone")
+        "UserCharacter",
+        back_populates="equipped_light_cone",
+        foreign_keys="UserCharacter.equipped_light_cone_id",
+        uselist=False,
+    )

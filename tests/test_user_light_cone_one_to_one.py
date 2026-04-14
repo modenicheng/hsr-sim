@@ -14,22 +14,31 @@ def _build_session() -> Session:
     return Session(engine)
 
 
-def test_user_light_cone_equipped_by_unique_constraint():
+def test_user_character_equipped_light_cone_unique_constraint():
     session = _build_session()
 
     try:
-        character = UserCharacter(
+        character_1 = UserCharacter(
             char_config_id=1001,
             version="v1.0",
             level=80,
             eidolon_level=0,
         )
-        session.add(character)
+        character_2 = UserCharacter(
+            char_config_id=1002,
+            version="v1.0",
+            level=80,
+            eidolon_level=0,
+        )
+        session.add_all([character_1, character_2])
         session.flush()
 
-        lc_1 = UserLightCone(config_id=2001, version="v1.0", equipped_by=character.id)
-        lc_2 = UserLightCone(config_id=2002, version="v1.0", equipped_by=character.id)
-        session.add_all([lc_1, lc_2])
+        light_cone = UserLightCone(config_id=2001, version="v1.0")
+        session.add(light_cone)
+        session.flush()
+
+        character_1.equipped_light_cone_id = light_cone.id
+        character_2.equipped_light_cone_id = light_cone.id
 
         with pytest.raises(IntegrityError):
             session.commit()

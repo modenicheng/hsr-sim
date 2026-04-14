@@ -9,7 +9,6 @@ from .identity import CharacterIdentityComponent
 from .equipment import EquippedRelicsComponent, EquippedLightConeComponent
 from .buffs import BuffContainerComponent, StackComponent
 from .skills import SkillSlotsComponent, CooldownComponent
-from .resources import BaseResourceComponent
 
 __all__ = [
     "HealthComponent",
@@ -25,5 +24,4 @@ __all__ = [
     "StackComponent",
     "SkillSlotsComponent",
     "CooldownComponent",
-    "BaseResourceComponent",
 ]
