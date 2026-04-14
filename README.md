@@ -102,6 +102,34 @@ uv run .\scripts\create_light_cone.py <name...> [--version v1.0] [-f]
 configs/<version>/light_cones/<name>/
 ```
 
+### Create a buff
+
+```sh
+uv run .\scripts\create_buff.py <buff_name> [--version v1.0] [-f]
+uv run .\scripts\create_buff.py overload <character_name> <buff_name> [--version v1.0] [-f]
+```
+
+- `buff_name`：必填，仅允许英文字符和 `_`
+- `overload`：可选模式标记；出现时表示创建**角色专属 Buff**
+- `character_name`：`overload` 模式下必填，角色名仅允许英文字符和 `_`
+- `--version / -v`：可选，版本号，支持 `x.x` 或 `vx.x`，默认 `v1.0`
+- `-f / --force`：可选，强制覆写已存在的同名 Buff 目录
+
+输出目录：
+
+```text
+configs/<version>/buffs/<buff_name>/
+configs/<version>/characters/<character_name>/buffs/<buff_name>/
+```
+
+#### Buff 配置约定
+
+项目中的 Buff 配置采用“**全局目录 + 角色可覆写**”的混合方案：
+
+- **全局 Buff**：放在 `configs/<version>/buffs/` 下，适合通用增益、减益、召唤物效果等可复用配置。
+- **角色专属 Buff**：放在 `configs/<version>/characters/<character_name>/buffs/` 下，用于只服务于单个角色机制的特殊效果。
+- **加载优先级**：当同名或同 ID 的 Buff 同时存在时，角色专属配置优先于全局配置。
+
 ### Examples
 
 ```sh

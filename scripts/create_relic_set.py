@@ -11,17 +11,29 @@ CONFIGS_DIR/
 """
 
 from argparse import ArgumentParser, Namespace
-import json
 from pathlib import Path
-import re
 import shutil
-from typing import Any
 
 from hsr_sim.core.config import CONFIGS_DIR
 from hsr_sim.models.schemas.enums import RelicSlot
 from hsr_sim.models.schemas.passive import PassiveSkillConfig
 from hsr_sim.models.schemas.relics import RelicConfig
 from hsr_sim.models.schemas.relics import RelicSetConfig
+
+try:
+    from scripts.scaffold_utils import allocate_ids
+    from scripts.scaffold_utils import make_loadable_script_template
+    from scripts.scaffold_utils import normalize_version
+    from scripts.scaffold_utils import validate_name
+    from scripts.scaffold_utils import write_json
+    from scripts.scaffold_utils import write_text
+except ModuleNotFoundError:
+    from scaffold_utils import allocate_ids
+    from scaffold_utils import make_loadable_script_template
+    from scaffold_utils import normalize_version
+    from scaffold_utils import validate_name
+    from scaffold_utils import write_json
+    from scaffold_utils import write_text
 
 RELIC_SET_ID_RANGE = (20000000, 20999999)
 RELIC_ITEM_ID_RANGE = (21000000, 21999999)
@@ -30,19 +42,11 @@ RELIC_4PC_PASSIVE_ID_RANGE = (23000000, 23999999)
 
 
 def _validate_name(value: str) -> str:
-    if not re.fullmatch(r"[A-Za-z_]+", value):
-        raise ValueError(
-            "Relic set name only allows English characters and underscores (_)。"
-        )
-    return value
+    return validate_name(value, label="Relic set name")
 
 
 def _normalize_version(value: str) -> str:
-    matched = re.fullmatch(r"v?(\d+\.\d+)", value)
-    if not matched:
-        raise ValueError(
-            "version format only supports x.x or vx.x (e.g., 1.0 / v1.0).")
-    return f"v{matched.group(1)}"
+    return normalize_version(value)
 
 
 def parse_args() -> Namespace:
@@ -85,17 +89,6 @@ def parse_args() -> Namespace:
     return args
 
 
-def _write_text(path: Path, content: str) -> None:
-    if path.exists():
-        raise FileExistsError(f"File already exists: {path}")
-    with path.open("w", encoding="utf-8", newline="\n") as f:
-        f.write(content)
-
-
-def _write_json(path: Path, payload: dict) -> None:
-    _write_text(path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-
-
 def _slot_list(set_type: str) -> list[RelicSlot]:
     if set_type == "relics":
         return [
@@ -105,55 +98,24 @@ def _slot_list(set_type: str) -> list[RelicSlot]:
 
 
 def _script_template(set_name: str, script_name: str) -> str:
-    return (f'"""{set_name} {script_name} script."""\n\n'
-            "\n"
-            "def apply(context):\n"
-            "    \"\"\"TODO: implement set bonus behavior.\"\"\"\n"
-            "    _ = context\n"
-            "\n")
-
-
-def _extract_ids(payload: Any) -> list[int]:
-    ids: list[int] = []
-    if isinstance(payload, dict):
-        for key, value in payload.items():
-            if key == "id" and isinstance(value, int):
-                ids.append(value)
-            ids.extend(_extract_ids(value))
-    elif isinstance(payload, list):
-        for item in payload:
-            ids.extend(_extract_ids(item))
-    return ids
-
-
-def _collect_version_ids(version: str) -> list[int]:
-    version_dir = CONFIGS_DIR / version
-    if not version_dir.exists():
-        return []
-
-    ids: list[int] = []
-    for json_path in version_dir.rglob("*.json"):
-        try:
-            payload = json.loads(json_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            continue
-        ids.extend(_extract_ids(payload))
-    return ids
+    module_stem = f"{set_name}_{script_name}"
+    return make_loadable_script_template(
+        module_stem=module_stem,
+        title=f"{set_name} {script_name} script",
+        execute_todo="TODO: implement set bonus behavior.",
+        class_doc="Auto-generated relic set script class.",
+    )
 
 
 def _allocate_ids(version: str,
                   id_range: tuple[int, int],
                   count: int = 1) -> list[int]:
-    lower, upper = id_range
-    existing = [
-        value for value in _collect_version_ids(version)
-        if lower <= value <= upper
-    ]
-    start = max(existing, default=lower - 1) + 1
-    end = start + count - 1
-    if end > upper:
-        raise ValueError(f"ID range exhausted: {lower}-{upper}")
-    return list(range(start, end + 1))
+    return allocate_ids(
+        configs_dir=CONFIGS_DIR,
+        version=version,
+        id_range=id_range,
+        count=count,
+    )
 
 
 def _build_relic_payload(
@@ -221,7 +183,7 @@ def run_create_relic_set(name: str,
 
     for idx, slot in enumerate(slots):
         json_path = set_dir / f"{slot.value}.json"
-        _write_json(
+        write_json(
             json_path,
             _build_relic_payload(name, slot, relic_item_ids[idx], relic_set),
         )
@@ -229,7 +191,7 @@ def run_create_relic_set(name: str,
 
     for script_name in ["2_pc", "4_pc"]:
         py_path = set_dir / f"{name}_{script_name}.py"
-        _write_text(py_path, _script_template(name, script_name))
+        write_text(py_path, _script_template(name, script_name))
         created_files.append(py_path)
 
     print(f"Created {len(created_files)} files under: {set_dir}")

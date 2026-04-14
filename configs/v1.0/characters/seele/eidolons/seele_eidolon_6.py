@@ -1,7 +1,14 @@
 """seele eidolon 6 script."""
 
+from hsr_sim.skills.script_loader import BaseSkill
 
-def apply(context):
-    """TODO: implement behavior."""
-    _ = context
+
+class SeeleEidolon6(BaseSkill):
+    """Auto-generated skill script class."""
+
+    def execute(self, *args, **kwargs):
+        """TODO: implement behavior."""
+        _ = args, kwargs
+        return None
+
 

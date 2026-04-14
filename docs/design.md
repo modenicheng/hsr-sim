@@ -55,6 +55,8 @@ hsr-sim/
 │   │   │       ├── talent/           # 天赋脚本
 │   │   │       ├── technique/        # 秘技脚本
 │   │   │       └── bonus_ability/    # 额外能力脚本
+│   │   │       └── buffs/            # 角色专属 Buff 覆写层（可选）
+│   │   ├── buffs/                    # 全局 Buff 池（可按 common / debuffs / summons 分层）
 │   │   ├── light_cones/              # 光锥配置（每个光锥一个子目录）
 │   │   │   └── <light_cone_name>/
 │   │   │       ├── <light_cone_name>.json
@@ -188,6 +190,13 @@ hsr-sim/
 - 启动时扫描所有版本目录，按版本号从小到大加载，后加载的配置覆盖同 ID 的旧配置（内存中保留所有版本，查询时默认返回最新版本，亦可按需指定历史版本）。
 - 用户角色实例记录创建时的 `config_version` 字段，确保加载旧存档时使用当时版本的配置，保证数值稳定。
 - 对局记录同样绑定 `config_version`，确保战斗回放可复现。
+
+#### 4.2.1 Buff 组织约定
+
+- **全局优先**：通用 Buff 统一放在 `configs/vX.Y/buffs/` 下，按功能分类即可。
+- **角色可覆写**：角色专属 Buff 放在 `configs/vX.Y/characters/<character_name>/buffs/`，加载时优先于全局同名/同 ID Buff。
+- **兼容历史结构**：旧的单 Buff 子目录写法仍可继续使用，便于平滑迁移。
+- **查询原则**：运行时按“角色专属 → 全局”的顺序查找，未命中再回落到默认版本。
 
 ### 4.3 数据流向
 

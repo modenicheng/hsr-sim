@@ -1,7 +1,14 @@
 """seele basic_atk script."""
 
+from hsr_sim.skills.script_loader import BaseSkill
 
-def apply(context):
-    """TODO: implement skill behavior."""
-    _ = context
+
+class SeeleBasicAtk(BaseSkill):
+    """Auto-generated skill script class."""
+
+    def execute(self, *args, **kwargs):
+        """TODO: implement skill behavior."""
+        _ = args, kwargs
+        return None
+
 

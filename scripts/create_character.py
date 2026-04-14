@@ -24,11 +24,9 @@ CONFIGS_DIR/
 """
 
 from argparse import ArgumentParser, Namespace
-import json
 from pathlib import Path
 import re
 import shutil
-from typing import Any
 
 from hsr_sim.core.config import CONFIGS_DIR
 from hsr_sim.models.schemas.character import CharacterConfig
@@ -37,6 +35,21 @@ from hsr_sim.models.schemas.eidolon import EidolonConfig
 from hsr_sim.models.schemas.passive import PassiveSkillConfig
 from hsr_sim.models.schemas.skill import SkillConfig
 from hsr_sim.models.schemas.enums import Element, SkillType, StatType
+
+try:
+    from scripts.scaffold_utils import allocate_ids
+    from scripts.scaffold_utils import make_loadable_script_template
+    from scripts.scaffold_utils import normalize_version
+    from scripts.scaffold_utils import validate_name
+    from scripts.scaffold_utils import write_json
+    from scripts.scaffold_utils import write_text
+except ModuleNotFoundError:
+    from scaffold_utils import allocate_ids
+    from scaffold_utils import make_loadable_script_template
+    from scaffold_utils import normalize_version
+    from scaffold_utils import validate_name
+    from scaffold_utils import write_json
+    from scaffold_utils import write_text
 
 CHARACTER_ID_RANGE = (10000000, 10999999)
 BASIC_ATK_ID_RANGE = (11000000, 11999999)
@@ -50,20 +63,12 @@ BONUS_ABILITY_ID_RANGE = (17000000, 17999999)
 
 def _validate_character_name(value: str) -> str:
     """Validate character name: only English letters and underscore are allowed."""
-    if not re.fullmatch(r"[A-Za-z_]+", value):
-        raise ValueError(
-            "Character name only allows English characters and underscores (_)."
-        )
-    return value
+    return validate_name(value, label="Character name")
 
 
 def _normalize_version(value: str) -> str:
     """Accept x.x or vx.x and normalize to vx.x."""
-    matched = re.fullmatch(r"v?(\d+\.\d+)", value)
-    if not matched:
-        raise ValueError(
-            "version format only supports x.x or vx.x (e.g., 1.0 or v1.0).")
-    return f"v{matched.group(1)}"
+    return normalize_version(value)
 
 
 def parse_args() -> Namespace:
@@ -101,75 +106,57 @@ def parse_args() -> Namespace:
 
 
 def _write_text(path: Path, content: str) -> None:
-    if path.exists():
-        raise FileExistsError(f"File already exists: {path}")
-    with path.open("w", encoding="utf-8", newline="\n") as f:
-        f.write(content)
+    write_text(path, content)
 
 
 def _write_json(path: Path, payload: dict) -> None:
-    _write_text(path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    write_json(path, payload)
+
+
+def _snake_to_camel(name: str) -> str:
+    return "".join(part.capitalize() for part in name.split("_"))
+
+
+def _make_loadable_script_template(
+    *,
+    module_stem: str,
+    title: str,
+    execute_todo: str,
+) -> str:
+    return make_loadable_script_template(
+        module_stem=module_stem,
+        title=title,
+        execute_todo=execute_todo,
+        class_doc="Auto-generated skill script class.",
+    )
 
 
 def _make_skill_script_template(character_name: str, skill_name: str) -> str:
-    return (f'"""{character_name} {skill_name} script."""\n\n'
-            "\n"
-            "def apply(context):\n"
-            "    \"\"\"TODO: implement skill behavior.\"\"\"\n"
-            "    _ = context\n"
-            "\n")
+    module_stem = f"{character_name}_{skill_name}"
+    return _make_loadable_script_template(
+        module_stem=module_stem,
+        title=f"{character_name} {skill_name} script",
+        execute_todo="TODO: implement skill behavior.",
+    )
 
 
-def _make_empty_script_template(title: str) -> str:
-    return (f'"""{title}."""\n\n'
-            "\n"
-            "def apply(context):\n"
-            "    \"\"\"TODO: implement behavior.\"\"\"\n"
-            "    _ = context\n"
-            "\n")
-
-
-def _extract_ids(payload: Any) -> list[int]:
-    ids: list[int] = []
-    if isinstance(payload, dict):
-        for key, value in payload.items():
-            if key == "id" and isinstance(value, int):
-                ids.append(value)
-            ids.extend(_extract_ids(value))
-    elif isinstance(payload, list):
-        for item in payload:
-            ids.extend(_extract_ids(item))
-    return ids
-
-
-def _collect_version_ids(version: str) -> list[int]:
-    version_dir = CONFIGS_DIR / version
-    if not version_dir.exists():
-        return []
-
-    ids: list[int] = []
-    for json_path in version_dir.rglob("*.json"):
-        try:
-            payload = json.loads(json_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            continue
-        ids.extend(_extract_ids(payload))
-    return ids
+def _make_empty_script_template(module_stem: str, title: str) -> str:
+    return _make_loadable_script_template(
+        module_stem=module_stem,
+        title=title,
+        execute_todo="TODO: implement behavior.",
+    )
 
 
 def _allocate_ids(version: str,
                   id_range: tuple[int, int],
                   count: int = 1) -> list[int]:
-    lower, upper = id_range
-    existing = [
-        value for value in _collect_version_ids(version)
-        if lower <= value <= upper
-    ]
-    start = max(existing, default=lower - 1) + 1
-    end = start + count - 1
-    if end > upper:
-        raise ValueError(f"ID range exhausted: {lower}-{upper}")
-    return list(range(start, end + 1))
+    return allocate_ids(
+        configs_dir=CONFIGS_DIR,
+        version=version,
+        id_range=id_range,
+        count=count,
+    )
 
 
 def run_create_character(
@@ -339,21 +326,29 @@ def run_create_character(
         _write_text(
             eidolon_py,
             _make_empty_script_template(
-                f"{character_name} eidolon {i} script"),
+                module_stem=f"{character_name}_eidolon_{i}",
+                title=f"{character_name} eidolon {i} script",
+            ),
         )
         created_files.append(eidolon_py)
 
     talent_py = talent_dir / f"{character_name}_talent.py"
     _write_text(
         talent_py,
-        _make_empty_script_template(f"{character_name} talent script"),
+        _make_empty_script_template(
+            module_stem=f"{character_name}_talent",
+            title=f"{character_name} talent script",
+        ),
     )
     created_files.append(talent_py)
 
     technique_py = technique_dir / f"{character_name}_technique.py"
     _write_text(
         technique_py,
-        _make_empty_script_template(f"{character_name} technique script"),
+        _make_empty_script_template(
+            module_stem=f"{character_name}_technique",
+            title=f"{character_name} technique script",
+        ),
     )
     created_files.append(technique_py)
 
@@ -362,7 +357,9 @@ def run_create_character(
         _write_text(
             bonus_py,
             _make_empty_script_template(
-                f"{character_name} bonus ability {i} script", ),
+                module_stem=f"{character_name}_bonus_ability_{i}",
+                title=f"{character_name} bonus ability {i} script",
+            ),
         )
         created_files.append(bonus_py)
 
