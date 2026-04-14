@@ -3,10 +3,10 @@
   "name": "seele",
   "rarity": 5,
   "element": "quantum",
-  "base_hp": 931.0,
-  "base_atk": 640.0,
-  "base_def": 363.0,
-  "base_spd": 115.0,
+  "base_hp": 1000.0,
+  "base_atk": 500.0,
+  "base_def": 500.0,
+  "base_spd": 100.0,
   "basic_atk": {
     "id": 11000000,
     "name": "seele_basic",
@@ -114,6 +114,10 @@
   ],
   "stat_bonus": {
     "atk_percent": 0.0
+  },
+  "energy": {
+    "energy_type": "standard",
+    "max_energy": 120
   },
   "elation_skill": null,
   "memosprite": null

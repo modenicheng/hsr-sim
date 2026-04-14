@@ -9,9 +9,11 @@ from hsr_sim.models.schemas.character import CharacterConfig
 from hsr_sim.models.schemas.light_cone import LightConeConfig
 from hsr_sim.models.schemas.relics import RelicConfig
 from hsr_sim.models.schemas.relics import RelicSetConfig
+from pydantic import ValidationError
 
 
 class ConfigLoader:
+
     def __init__(self):
         self._cache: dict[str, dict[str, dict[str, dict[str, Any]]]] = {
             "characters": defaultdict(dict),
@@ -61,9 +63,13 @@ class ConfigLoader:
 
             with json_file.open("r", encoding="utf-8") as f:
                 data = json.load(f)
-            char_config = CharacterConfig.model_validate(data)
+            try:
+                char_config = CharacterConfig.model_validate(data)
+            except ValidationError:
+                continue
 
-            scripts_info = self._collect_character_scripts(version, char_dir, char_name)
+            scripts_info = self._collect_character_scripts(
+                version, char_dir, char_name)
 
             self._cache["characters"][char_name][version] = {
                 "config": char_config,
@@ -84,7 +90,8 @@ class ConfigLoader:
             scripts["skills"] = {}
             for skill_file in skills_dir.glob("*.py"):
                 skill_name = skill_file.stem
-                scripts["skills"][skill_name] = f"{base_package}.skills.{skill_name}"
+                scripts["skills"][
+                    skill_name] = f"{base_package}.skills.{skill_name}"
 
         talent_dir = char_dir / "talent"
         if talent_dir.exists():
@@ -94,12 +101,15 @@ class ConfigLoader:
         tech_dir = char_dir / "technique"
         if tech_dir.exists():
             for tech_file in tech_dir.glob("*.py"):
-                scripts["technique"] = f"{base_package}.technique.{tech_file.stem}"
+                scripts[
+                    "technique"] = f"{base_package}.technique.{tech_file.stem}"
 
         eidolon_dir = char_dir / "eidolons"
         if eidolon_dir.exists():
             eidolon_files = sorted(eidolon_dir.glob("*.py"))
-            scripts["eidolons"] = [f"{base_package}.eidolons.{f.stem}" for f in eidolon_files]
+            scripts["eidolons"] = [
+                f"{base_package}.eidolons.{f.stem}" for f in eidolon_files
+            ]
 
         bonus_dir = char_dir / "bonus_ability"
         if bonus_dir.exists():
@@ -126,7 +136,10 @@ class ConfigLoader:
 
             with json_file.open("r", encoding="utf-8") as f:
                 data = json.load(f)
-            lc_config = LightConeConfig.model_validate(data)
+            try:
+                lc_config = LightConeConfig.model_validate(data)
+            except ValidationError:
+                continue
 
             script_module = None
             if py_file.exists():
@@ -152,7 +165,10 @@ class ConfigLoader:
             for piece_file in set_dir.glob("*.json"):
                 with piece_file.open("r", encoding="utf-8") as f:
                     payload = json.load(f)
-                piece_config = RelicConfig.model_validate(payload)
+                try:
+                    piece_config = RelicConfig.model_validate(payload)
+                except ValidationError:
+                    continue
                 pieces[piece_file.stem] = piece_config
                 if set_config is None:
                     set_config = piece_config.relic_set
@@ -168,7 +184,8 @@ class ConfigLoader:
                 "scripts": scripts,
             }
 
-    def _get_latest(self, dataset: dict[str, dict[str, Any]], version: str | None) -> dict[str, Any] | None:
+    def _get_latest(self, dataset: dict[str, dict[str, Any]],
+                    version: str | None) -> dict[str, Any] | None:
         if not dataset:
             return None
         if version:
@@ -176,20 +193,34 @@ class ConfigLoader:
         latest_ver = max(dataset.keys(), key=self._parse_version)
         return dataset[latest_ver]
 
-    def get_character(self, name: str, version: str | None = None) -> dict[str, Any] | None:
-        return self._get_latest(self._cache["characters"].get(name, {}), version)
+    def get_character(self,
+                      name: str,
+                      version: str | None = None) -> dict[str, Any] | None:
+        return self._get_latest(self._cache["characters"].get(name, {}),
+                                version)
 
     def get_character_versions(self, name: str) -> list[str]:
-        return sorted(self._cache["characters"].get(name, {}).keys(), key=self._parse_version)
+        return sorted(self._cache["characters"].get(name, {}).keys(),
+                      key=self._parse_version)
 
-    def get_light_cone(self, name: str, version: str | None = None) -> dict[str, Any] | None:
-        return self._get_latest(self._cache["light_cones"].get(name, {}), version)
+    def get_light_cone(self,
+                       name: str,
+                       version: str | None = None) -> dict[str, Any] | None:
+        return self._get_latest(self._cache["light_cones"].get(name, {}),
+                                version)
 
     def get_light_cone_versions(self, name: str) -> list[str]:
-        return sorted(self._cache["light_cones"].get(name, {}).keys(), key=self._parse_version)
+        return sorted(self._cache["light_cones"].get(name, {}).keys(),
+                      key=self._parse_version)
 
-    def get_relic_set(self, name: str, version: str | None = None) -> dict[str, Any] | None:
+    def get_relic_set(self,
+                      name: str,
+                      version: str | None = None) -> dict[str, Any] | None:
         return self._get_latest(self._cache["relics"].get(name, {}), version)
 
     def get_relic_set_versions(self, name: str) -> list[str]:
-        return sorted(self._cache["relics"].get(name, {}).keys(), key=self._parse_version)
+        return sorted(self._cache["relics"].get(name, {}).keys(),
+                      key=self._parse_version)
+
+
+config_loader = ConfigLoader()

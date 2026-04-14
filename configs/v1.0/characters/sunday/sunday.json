@@ -115,6 +115,10 @@
   "stat_bonus": {
     "atk_percent": 0.0
   },
+  "energy": {
+    "energy_type": "standard",
+    "max_energy": 120
+  },
   "elation_skill": null,
   "memosprite": null
 }

@@ -32,6 +32,7 @@ from typing import Any
 
 from hsr_sim.core.config import CONFIGS_DIR
 from hsr_sim.models.schemas.character import CharacterConfig
+from hsr_sim.models.schemas.character import EnergyConfig
 from hsr_sim.models.schemas.eidolon import EidolonConfig
 from hsr_sim.models.schemas.passive import PassiveSkillConfig
 from hsr_sim.models.schemas.skill import SkillConfig
@@ -309,6 +310,7 @@ def run_create_character(
             for i in range(1, 4)
         ],
         stat_bonus={StatType.ATK_PERCENT: 0.0},
+        energy=EnergyConfig(energy_type="standard", max_energy=120),
     )
 
     _write_json(character_json_path, character.model_dump(mode="json"))

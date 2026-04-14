@@ -31,22 +31,20 @@ hsr-sim/
 │   ├── env.py
 │   └── script.py.mako
 ├── alembic.ini                # Alembic 配置文件
-├── configs/                   # 静态配置文件根目录
-│   ├── versions/              # 按版本号存放配置快照
-|   │   ├── characters/
-|   │   │   └── charactor_name.json
-|   │   ├── skills/
-|   │   │   ├── charactor_name.json               # 技能静态配置
-|   │   │   └── scripts/                          # 技能脚本（Python）
-|   │   │       ├── __init__.py
-|   │   │       ├── basic_attack_charactor_name.py
-|   │   │       ├── skill_charactor_name.py
-|   │   │       ├── ultimate_charactor_name.py
-|   │   │       └── ...
-|   │   ├── light_cones/
-|   │   ├── relic_sets/
-|   │   └── ...
-│   └── latest                 # 纯文本文件，指向当前活跃版本
+├── configs/                   # 静态配置文件根目录（按版本组织）
+│   ├── v1.0/
+│   │   ├── characters/
+│   │   │   └── <character_name>/
+│   │   │       ├── <character_name>.json
+│   │   │       ├── skills/
+│   │   │       ├── eidolons/
+│   │   │       ├── talent/
+│   │   │       ├── technique/
+│   │   │       └── bonus_ability/
+│   │   ├── light_cones/
+│   │   └── relics/
+│   ├── v1.1/
+│   └── ...
 ├── data/                      # 运行时数据文件
 │   └── hsr.db                 # SQLite 数据库文件
 ├── docs/                      # 设计文档
@@ -152,13 +150,13 @@ hsr-sim/
 
 | 类型 | 存放位置 | 数据模型 | 可变性 | 持久化 |
 | :--- | :--- | :--- | :--- | :--- |
-| **静态配置** | `configs/versions/` | `models/schemas/` (Pydantic) | **只读** | 不存数据库 |
+| **静态配置** | `configs/vX.Y/` | `models/schemas/` (Pydantic) | **只读** | 不存数据库 |
 | **运行时状态** | ECS 组件 | `ecs/components/` (Pydantic) | **频繁修改** | 可序列化存档 |
 | **用户实例数据** | SQLite/PostgreSQL | `models/db/` (SQLAlchemy) | 用户操作修改 | 持久化 |
 
 ### 4.2 配置版本化
 
-- 每次平衡性调整时，新建一个目录，版本号递增。只有被调整的角色在对应目录有记录，其余没有改动的角色不复制到新目录。
+- 每次平衡性调整时，新建一个目录，版本号递增，并从上一版本复制整套 `configs/<old_version>/` 到 `configs/<new_version>/` 后再修改目标项。
 - 扫描目录时，先按照版本号排序，从旧向新加载，并合并同一角色的不同版本。（同一角色所有文件命名一致，但是版本目录不同）
 - 用户角色实例记录创建时的 `config_version` 字段，确保加载旧存档时使用当时版本的配置，保证数值稳定。
 - 对局记录同样绑定 `config_version`，确保战斗回放可复现。
@@ -211,7 +209,7 @@ flowchart LR
 - **特点**：所有字段均有类型校验，提供 `model_validate` 方法。
 - **关键文件**：
   - `enums.py`：集中定义所有枚举（`Element`, `Path`, `StatType`, `SkillType` 等），被其他模块广泛引用。
-  - `character.py`：`CharacterConfig`，包含基础属性、技能槽位、星魂、行迹等。
+  - `character.py`：`CharacterConfig`，包含基础属性、技能槽位、星魂、行迹和 `energy`（`energy_type` + `max_energy`）等。
   - `skill.py`：`SkillConfig`，包含技能类型、脚本路径。所有技能逻辑全部使用脚本以保证统一。
   - `light_cone.py`、`relic.py`：遗器和光锥的静态定义，包含被动脚本。
 
@@ -282,7 +280,7 @@ flowchart LR
 1. 用户在界面选择角色实例（ID=1001，版本=v1.0）。
 2. `CharacterRepository` 从数据库加载 `UserCharacter` 记录。
 3. `ConfigLoader` 根据 `v1.0` 加载对应的 `CharacterConfig`。
-4. `factories.create_character_from_config()` 创建 ECS 实体并添加基础组件。
+4. `factories.create_character_from_config()` 创建 ECS 实体并添加基础组件；根据 `config.energy` 自动挂载标准能量或特殊能量组件。
 5. `factories.apply_user_data()` 根据用户实例数据（星魂、遗器、光锥）修改组件属性。
 6. 实体加入战斗世界，相关 System 开始运作。
 

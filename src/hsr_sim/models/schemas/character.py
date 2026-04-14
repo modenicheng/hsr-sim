@@ -14,6 +14,9 @@ class Memosprite(BaseModel):
     memosprite_talent_id: int  # 忆灵天赋 ID
     memosprite_skill_id: int  # 忆灵技 ID
 
+class EnergyConfig(BaseModel):
+    energy_type: str = Field(default="standard")  # 能量类型，如 "standard" 或特定的特殊能量类型
+    max_energy: int = Field(gt=0, default=120)  # 最大能量值
 
 class CharacterConfig(BaseModel):
     id: int
@@ -32,5 +35,6 @@ class CharacterConfig(BaseModel):
     technique: PassiveSkillConfig  # 秘技
     bonus_abilities: list[PassiveSkillConfig] = []  # 额外能力
     stat_bonus: dict[StatType, float] = {}  # 行迹提供的角色固有属性加成
+    energy: EnergyConfig  # 能量配置
     elation_skill: int | None = None  # 欢愉技 ID
     memosprite: Memosprite | None = None  # 忆灵配置

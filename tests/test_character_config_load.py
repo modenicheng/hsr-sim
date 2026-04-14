@@ -1,9 +1,11 @@
 import json
+import importlib
 
 from hsr_sim.models.schemas.character import CharacterConfig
 from hsr_sim.models.schemas.light_cone import LightConeConfig
 from hsr_sim.models.schemas.relics import RelicSetConfig
-from hsr_sim.services import config_loader as config_loader_module
+
+config_loader_module = importlib.import_module("hsr_sim.services.config_loader")
 
 
 def _write_json(path, payload: dict) -> None:
@@ -80,6 +82,7 @@ def _character_payload(char_id: int, name: str) -> dict:
 			}
 		],
 		"stat_bonus": {"atk_percent": 0.1},
+		"energy": {"energy_type": "standard", "max_energy": 120},
 		"elation_skill": None,
 		"memosprite": None,
 	}

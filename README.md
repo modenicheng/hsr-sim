@@ -12,7 +12,7 @@ uv sync
 
 项目使用 `prek` 管理 Git hooks（见根目录 `prek.toml`）：
 
-- `ruff-check --fix` + `ruff-format`：统一 Python 代码风格与格式（Google 风格 docstring 约定）
+- `ruff-check --fix` + `ruff-format`：统一 Python 代码风格与格式
 - `conventional-pre-commit`：在 `commit-msg` 阶段校验 Conventional Commit
 - 内置基础检查：如尾随空格、文件结尾换行、私钥检测等
 
@@ -63,6 +63,7 @@ configs/<version>/characters/<character_name>/
 - 天赋：`talents`（嵌套对象列表）
 - 秘技：`technique`（嵌套对象）
 - 额外能力：`bonus_abilities`（嵌套对象列表）
+- 能量配置：`energy`（嵌套对象，包含 `energy_type` 与 `max_energy`）
 
 说明：`talent_ids / technique_id / bonus_ability_ids` 已改为上述嵌套结构。
 
