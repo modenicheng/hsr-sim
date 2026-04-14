@@ -1,0 +1,1 @@
+"""TUI Application entry point."""

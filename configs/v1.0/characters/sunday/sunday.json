@@ -1,0 +1,124 @@
+{
+  "id": 10000001,
+  "name": "sunday",
+  "rarity": 5,
+  "element": "imaginary",
+  "base_hp": 1000.0,
+  "base_atk": 500.0,
+  "base_def": 500.0,
+  "base_spd": 100.0,
+  "basic_atk": {
+    "id": 11000001,
+    "name": "sunday_basic",
+    "type": "basic",
+    "description": "TODO: fill description",
+    "target_type": "single_target",
+    "energy_gain": 0.0,
+    "script": "skills/sunday_basic_atk"
+  },
+  "skill": {
+    "id": 12000001,
+    "name": "sunday_skill",
+    "type": "skill",
+    "description": "TODO: fill description",
+    "target_type": "single_target",
+    "energy_gain": 0.0,
+    "script": "skills/sunday_skill"
+  },
+  "ultimate": {
+    "id": 13000001,
+    "name": "sunday_ultimate",
+    "type": "ultimate",
+    "description": "TODO: fill description",
+    "target_type": "single_target",
+    "energy_gain": 0.0,
+    "script": "skills/sunday_ultimate"
+  },
+  "eidolons": [
+    {
+      "id": 14000006,
+      "index": 1,
+      "name": "sunday_eidolon_1",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/sunday_eidolon_1"
+    },
+    {
+      "id": 14000007,
+      "index": 2,
+      "name": "sunday_eidolon_2",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/sunday_eidolon_2"
+    },
+    {
+      "id": 14000008,
+      "index": 3,
+      "name": "sunday_eidolon_3",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/sunday_eidolon_3"
+    },
+    {
+      "id": 14000009,
+      "index": 4,
+      "name": "sunday_eidolon_4",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/sunday_eidolon_4"
+    },
+    {
+      "id": 14000010,
+      "index": 5,
+      "name": "sunday_eidolon_5",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/sunday_eidolon_5"
+    },
+    {
+      "id": 14000011,
+      "index": 6,
+      "name": "sunday_eidolon_6",
+      "describe": "TODO: fill eidolon describe",
+      "script": "eidolons/sunday_eidolon_6"
+    }
+  ],
+  "talents": [
+    {
+      "id": 15000001,
+      "name": "sunday_talent",
+      "description": "TODO: fill talent description",
+      "script": "talent/sunday_talent"
+    }
+  ],
+  "technique": {
+    "id": 16000001,
+    "name": "sunday_technique",
+    "description": "TODO: fill technique description",
+    "script": "technique/sunday_technique"
+  },
+  "bonus_abilities": [
+    {
+      "id": 17000003,
+      "name": "sunday_bonus_ability_1",
+      "description": "TODO: fill bonus ability description",
+      "script": "bonus_ability/sunday_bonus_ability_1"
+    },
+    {
+      "id": 17000004,
+      "name": "sunday_bonus_ability_2",
+      "description": "TODO: fill bonus ability description",
+      "script": "bonus_ability/sunday_bonus_ability_2"
+    },
+    {
+      "id": 17000005,
+      "name": "sunday_bonus_ability_3",
+      "description": "TODO: fill bonus ability description",
+      "script": "bonus_ability/sunday_bonus_ability_3"
+    }
+  ],
+  "stat_bonus": {
+    "atk_percent": 0.0
+  },
+  "energy": {
+    "energy_type": "standard",
+    "max_energy": 120
+  },
+  "elation_skill": null,
+  "memosprite": null
+}

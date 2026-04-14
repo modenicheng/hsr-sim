@@ -13,7 +13,7 @@ _handler = RichHandler(
     markup=True,
 )
 
-# _handler.setFormatter(logging.Formatter("%(message)s"))
+_handler.setFormatter(logging.Formatter("%(name)s | %(message)s"))
 
 logging.basicConfig(level=logging.WARNING, handlers=[_handler])
 
