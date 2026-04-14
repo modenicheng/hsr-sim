@@ -1,0 +1,15 @@
+# Enforce LF line endings for text files across all platforms
+* text=auto eol=lf
+
+# Common source/config files should always use LF
+*.py text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=lf

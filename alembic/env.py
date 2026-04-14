@@ -21,7 +21,6 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -68,7 +67,11 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            render_as_batch=True,
+        )
 
         with context.begin_transaction():
             context.run_migrations()

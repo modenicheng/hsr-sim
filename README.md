@@ -138,3 +138,7 @@ uv run .\scripts\create_light_cone.py in_the_night a_grounded_ascent -v v1.0
 
 - 脚手架脚本默认会在对应号段内自动分配顺序 ID（按当前 `configs/<version>` 已存在配置递增）。
 - `--force` 仅覆盖同名目录，不会重置全局递增计数；新生成 ID 仍遵循“同号段取当前最大值 + 1”。
+
+## Design Docs
+
+在 `docs` 目录下的 `design.md` 。系统架构设计在这里。在动代码前最好先看看这个文档

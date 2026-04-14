@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from .enums import StatType, RelicSlot
+from .enums import RelicSlot, StatType
 from .passive import PassiveSkillConfig
 
 

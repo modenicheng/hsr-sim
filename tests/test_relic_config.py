@@ -23,7 +23,8 @@ def normal_relic_set_config() -> RelicSetConfig:
 
 
 @pytest.fixture()
-def normal_relic_config(normal_relic_set_config: RelicSetConfig) -> RelicConfig:
+def normal_relic_config(
+        normal_relic_set_config: RelicSetConfig) -> RelicConfig:
     return RelicConfig(
         id=1001,
         name="Amphoreus, The Eternal Land - Link Rope",
@@ -33,7 +34,8 @@ def normal_relic_config(normal_relic_set_config: RelicSetConfig) -> RelicConfig:
     )
 
 
-def test_relic_config_model_dump_json_roundtrip(normal_relic_config: RelicConfig):
+def test_relic_config_model_dump_json_roundtrip(
+        normal_relic_config: RelicConfig):
     dumped = normal_relic_config.model_dump(mode="json")
 
     assert dumped == {
@@ -60,11 +62,9 @@ def test_relic_config_model_dump_json_roundtrip(normal_relic_config: RelicConfig
 
 def test_relic_config_requires_relic_set():
     with pytest.raises(ValidationError, match="Field required"):
-        RelicConfig.model_validate(
-            {
-                "id": 1,
-                "name": "Bad relic",
-                "slot": RelicSlot.HEAD,
-                "story": "bad",
-            }
-        )
+        RelicConfig.model_validate({
+            "id": 1,
+            "name": "Bad relic",
+            "slot": RelicSlot.HEAD,
+            "story": "bad",
+        })

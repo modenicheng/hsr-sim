@@ -2,7 +2,7 @@
   "id": 10000001,
   "name": "sunday",
   "rarity": 5,
-  "element": "quantum",
+  "element": "imaginary",
   "base_hp": 1000.0,
   "base_atk": 500.0,
   "base_def": 500.0,

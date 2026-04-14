@@ -312,7 +312,7 @@ flowchart LR
 
 > 假设用户已有角色实例存储于数据库。数据库中不含任何角色基础配置，全部动态加载。
 
-1. 用户在界面选择角色实例（ID=1001，版本=v1.0）。
+1. 用户在界面选择角色实例（ID=10001001，版本=v1.0）。
 2. `CharacterRepository` 从数据库加载 `UserCharacter` 记录。
 3. `ConfigLoader` 根据 `v1.0` 加载对应的 `CharacterConfig`。
 4. `factories.create_character_from_config()` 创建 ECS 实体并添加基础组件；根据 `config.energy.energy_type` 自动挂载标准能量组件或自定义能量组件。

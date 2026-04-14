@@ -1,42 +1,35 @@
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Optional, List
 from sqlalchemy.orm import Session
 from src.hsr_sim.models.db.base import Base
 from src.hsr_sim.logger import get_logger
 
 logger = get_logger(__name__)
-
 ModelType = TypeVar("ModelType", bound=Base)
 
-
 class BaseRepository(Generic[ModelType]):
-
     def __init__(self, model: type[ModelType], db: Session):
         self.model = model
         self.db = db
 
-    def get(self, id: int) -> ModelType | None:
+    def get(self, id: int) -> Optional[ModelType]:
         return self.db.get(self.model, id)
 
-    def get_all(self) -> list[ModelType]:
+    def get_all(self) -> List[ModelType]:
         return self.db.query(self.model).all()
 
     def add(self, obj: ModelType) -> ModelType:
         self.db.add(obj)
-        self.db.commit()
-        self.db.refresh(obj)
         return obj
 
-    def update(self, obj: ModelType) -> ModelType:
-        self.db.merge(obj)
-        self.db.commit()
-        return obj
+    def add_all(self, objs: List[ModelType]) -> List[ModelType]:
+        self.db.add_all(objs)
+        return objs
 
     def delete(self, id: int) -> None:
-        obj: ModelType | None = self.get(id)
+        obj = self.get(id)
         if obj:
             self.db.delete(obj)
-            self.db.commit()
-            return
-        logger.warning(
-            f"ORM Object {self.model.__name__} with id {id} not found for deletion. Skipping."
-        )
+        else:
+            logger.warning(f"{self.model.__name__} with id {id} not found for deletion.")
+
+    # 不提供 update，由调用方直接修改从 get 返回的托管对象
