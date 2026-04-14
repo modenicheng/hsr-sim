@@ -26,7 +26,8 @@ LIGHT_CONE_PASSIVE_ID_RANGE = (31000000, 31999999)
 
 def _validate_name(value: str) -> str:
     if not re.fullmatch(r"[A-Za-z_]+", value):
-        raise ValueError("name only allows English characters and underscores (_).")
+        raise ValueError(
+            "name only allows English characters and underscores (_).")
     return value
 
 
@@ -42,7 +43,8 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "names",
         nargs="+",
-        help="One or more light cone names (English characters and underscores only)",
+        help=
+        "One or more light cone names (English characters and underscores only)",
     )
     parser.add_argument(
         "--version",
@@ -71,7 +73,8 @@ def parse_args() -> Namespace:
 def _write_text(path: Path, content: str) -> None:
     if path.exists():
         raise FileExistsError(f"File already exists: {path}")
-    path.write_text(content, encoding="utf-8")
+    with path.open("w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -115,9 +118,14 @@ def _collect_version_ids(version: str) -> list[int]:
     return ids
 
 
-def _allocate_ids(version: str, id_range: tuple[int, int], count: int = 1) -> list[int]:
+def _allocate_ids(version: str,
+                  id_range: tuple[int, int],
+                  count: int = 1) -> list[int]:
     lower, upper = id_range
-    existing = [value for value in _collect_version_ids(version) if lower <= value <= upper]
+    existing = [
+        value for value in _collect_version_ids(version)
+        if lower <= value <= upper
+    ]
     start = max(existing, default=lower - 1) + 1
     end = start + count - 1
     if end > upper:
@@ -125,7 +133,8 @@ def _allocate_ids(version: str, id_range: tuple[int, int], count: int = 1) -> li
     return list(range(start, end + 1))
 
 
-def _build_light_cone_payload(name: str, light_cone_id: int, passive_id: int) -> dict:
+def _build_light_cone_payload(name: str, light_cone_id: int,
+                              passive_id: int) -> dict:
     light_cone = LightConeConfig(
         id=light_cone_id,
         name=name,
@@ -167,7 +176,8 @@ def run_create_light_cone(name: str,
     json_path = cone_dir / f"{name}.json"
     py_path = cone_dir / f"{name}.py"
 
-    _write_json(json_path, _build_light_cone_payload(name, light_cone_id, passive_id))
+    _write_json(json_path,
+                _build_light_cone_payload(name, light_cone_id, passive_id))
     _write_text(py_path, _script_template(name))
 
     print(f"Created 2 files under: {cone_dir}")

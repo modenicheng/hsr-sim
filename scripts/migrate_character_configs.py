@@ -17,7 +17,6 @@ import re
 from hsr_sim.core.config import CONFIGS_DIR
 from hsr_sim.models.schemas.character import CharacterConfig
 
-
 DEFAULT_CHARACTER_PATCH: dict = {
     "energy": {
         "energy_type": "standard",
@@ -52,7 +51,10 @@ def _iter_versions(version: str | None) -> list[str]:
         return [_normalize_version(version)]
 
     pattern = re.compile(r"^v(\d+)\.(\d+)$")
-    versions = [p.name for p in CONFIGS_DIR.iterdir() if p.is_dir() and pattern.match(p.name)]
+    versions = [
+        p.name for p in CONFIGS_DIR.iterdir()
+        if p.is_dir() and pattern.match(p.name)
+    ]
     return sorted(versions)
 
 
@@ -71,7 +73,8 @@ def _iter_character_json_files(version: str) -> list[Path]:
     return files
 
 
-def migrate_character_configs(version: str | None = None, write: bool = False) -> dict[str, int]:
+def migrate_character_configs(version: str | None = None,
+                              write: bool = False) -> dict[str, int]:
     stats = {
         "scanned": 0,
         "updated": 0,
@@ -84,7 +87,8 @@ def migrate_character_configs(version: str | None = None, write: bool = False) -
             stats["scanned"] += 1
             try:
                 payload = json.loads(json_path.read_text(encoding="utf-8"))
-                migrated = _deep_fill_missing(copy.deepcopy(payload), DEFAULT_CHARACTER_PATCH)
+                migrated = _deep_fill_missing(copy.deepcopy(payload),
+                                              DEFAULT_CHARACTER_PATCH)
 
                 # 迁移后必须可通过 schema 校验
                 CharacterConfig.model_validate(migrated)
@@ -92,10 +96,13 @@ def migrate_character_configs(version: str | None = None, write: bool = False) -
 
                 if migrated != payload:
                     if write:
-                        json_path.write_text(
-                            json.dumps(migrated, ensure_ascii=False, indent=2) + "\n",
-                            encoding="utf-8",
-                        )
+                        with json_path.open("w",
+                                            encoding="utf-8",
+                                            newline="\n") as f:
+                            f.write(
+                                json.dumps(
+                                    migrated, ensure_ascii=False, indent=2) +
+                                "\n")
                     stats["updated"] += 1
             except Exception as exc:  # noqa: BLE001
                 stats["errors"] += 1
@@ -105,8 +112,11 @@ def migrate_character_configs(version: str | None = None, write: bool = False) -
 
 
 def parse_args() -> Namespace:
-    parser = ArgumentParser(description="Migrate character configs with safe default filling")
-    parser.add_argument("--version", default=None, help="Target version (x.x or vx.x). Default: all")
+    parser = ArgumentParser(
+        description="Migrate character configs with safe default filling")
+    parser.add_argument("--version",
+                        default=None,
+                        help="Target version (x.x or vx.x). Default: all")
     parser.add_argument(
         "--write",
         action="store_true",
@@ -122,8 +132,7 @@ def main() -> None:
     mode = "WRITE" if args.write else "DRY-RUN"
     print(
         f"[{mode}] scanned={stats['scanned']} validated={stats['validated']} "
-        f"updated={stats['updated']} errors={stats['errors']}"
-    )
+        f"updated={stats['updated']} errors={stats['errors']}")
 
 
 if __name__ == "__main__":

@@ -71,7 +71,8 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "character_names",
         nargs="+",
-        help="One or more character names (English letters and underscores only)",
+        help=
+        "One or more character names (English letters and underscores only)",
     )
     parser.add_argument(
         "--version",
@@ -82,13 +83,16 @@ def parse_args() -> Namespace:
         "-f",
         "--force",
         action="store_true",
-        help="Force overwrite existing character directory in the same version.",
+        help=
+        "Force overwrite existing character directory in the same version.",
     )
 
     args = parser.parse_args()
 
     try:
-        args.character_names = [_validate_character_name(name) for name in args.character_names]
+        args.character_names = [
+            _validate_character_name(name) for name in args.character_names
+        ]
         args.version = _normalize_version(args.version)
     except ValueError as exc:
         parser.error(str(exc))
@@ -99,7 +103,8 @@ def parse_args() -> Namespace:
 def _write_text(path: Path, content: str) -> None:
     if path.exists():
         raise FileExistsError(f"File already exists: {path}")
-    path.write_text(content, encoding="utf-8")
+    with path.open("w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -152,9 +157,14 @@ def _collect_version_ids(version: str) -> list[int]:
     return ids
 
 
-def _allocate_ids(version: str, id_range: tuple[int, int], count: int = 1) -> list[int]:
+def _allocate_ids(version: str,
+                  id_range: tuple[int, int],
+                  count: int = 1) -> list[int]:
     lower, upper = id_range
-    existing = [value for value in _collect_version_ids(version) if lower <= value <= upper]
+    existing = [
+        value for value in _collect_version_ids(version)
+        if lower <= value <= upper
+    ]
     start = max(existing, default=lower - 1) + 1
     end = start + count - 1
     if end > upper:
@@ -174,13 +184,11 @@ def run_create_character(
             shutil.rmtree(char_dir)
         else:
             available_versions = sorted(
-                [p.name for p in CONFIGS_DIR.iterdir() if p.is_dir()]
-            )
+                [p.name for p in CONFIGS_DIR.iterdir() if p.is_dir()])
             version_hint = (
                 f"Available versions: {', '.join(available_versions)}"
-                if available_versions
-                else "No available version directories detected."
-            )
+                if available_versions else
+                "No available version directories detected.")
             raise FileExistsError(
                 "Same character already exists in the same version.\n"
                 f"Character: {character_name}\n"
@@ -214,7 +222,9 @@ def run_create_character(
         technique_dir / f"{character_name}_technique.py",
         bonus_ability_dir / f"{character_name}_bonus_ability_1.py",
     ]
-    planned_files.extend([eidolons_dir / f"{character_name}_eidolon_{i}.py" for i in range(1, 7)])
+    planned_files.extend([
+        eidolons_dir / f"{character_name}_eidolon_{i}.py" for i in range(1, 7)
+    ])
 
     existing_files = [str(path) for path in planned_files if path.exists()]
     if existing_files:
@@ -306,8 +316,7 @@ def run_create_character(
                 name=f"{character_name}_bonus_ability_{i}",
                 description="TODO: fill bonus ability description",
                 script=f"bonus_ability/{character_name}_bonus_ability_{i}",
-            )
-            for i in range(1, 4)
+            ) for i in range(1, 4)
         ],
         stat_bonus={StatType.ATK_PERCENT: 0.0},
         energy=EnergyConfig(energy_type="standard", max_energy=120),

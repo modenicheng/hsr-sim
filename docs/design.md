@@ -1,8 +1,22 @@
 # HSR 模拟器架构设计文档
 
+**版本：1.0**
+**更新日期：2026-04-14**
+
+本文档为《崩坏：星穹铁道》战斗模拟器的架构总纲，面向全体开发人员及协作 Agents，旨在明确项目目标、技术选型、目录结构、核心设计原则与开发规范，确保团队协作一致、系统可长期演进。
+
+---
+
 ## 1. 项目概述
 
-本项目旨在构建一个高保真、可扩展的《崩坏：星穹铁道》战斗模拟器，用于角色强度计算、配装优化、AI 策略验证及蒙特卡洛批量分析。系统采用 **数据驱动** 和 **ECS（实体-组件-系统）** 架构，支持复杂的技能机制、动态效果插入和版本化配置管理。
+本项目旨在构建一个高保真、可扩展的《崩坏：星穹铁道》战斗模拟器，用于：
+
+- 角色强度计算与配装优化
+- 技能机制验证与数值平衡分析
+- AI 策略测试与蒙特卡洛批量模拟
+- 支持用户自定义角色状态（遗器、光锥、星魂）及对局回放
+
+系统采用 **数据驱动** 和 **ECS（实体-组件-系统）** 架构，支持复杂的技能机制、动态效果插入和版本化配置管理。
 
 ## 2. 核心技术栈
 
@@ -14,7 +28,7 @@
 | ECS 框架 | Esper 3.x | 运行时实体与组件管理 |
 | 数据库 ORM | SQLAlchemy 2.0 | 用户实例数据、对局记录持久化 |
 | 数据库迁移 | Alembic | 数据库 Schema 版本控制 |
-| 事件总线 | eventure | 系统间解耦通信 |
+| 事件总线 | eventure 总线 | 系统间解耦通信 |
 | 钩子系统 | 自研 HookChain | 核心流程干预点（祝福、装备效果） |
 | 技能脚本 | Python 动态导入 | 实现复杂技能逻辑 |
 | TUI | Textual / Rich | 交互界面与对局展示 |
@@ -36,14 +50,26 @@ hsr-sim/
 │   │   ├── characters/
 │   │   │   └── <character_name>/
 │   │   │       ├── <character_name>.json
-│   │   │       ├── skills/
-│   │   │       ├── eidolons/
-│   │   │       ├── talent/
-│   │   │       ├── technique/
-│   │   │       └── bonus_ability/
-│   │   ├── light_cones/
-│   │   └── relics/
-│   ├── v1.1/
+│   │   │       ├── skills/           # 主动技能脚本
+│   │   │       ├── eidolons/         # 星魂脚本
+│   │   │       ├── talent/           # 天赋脚本
+│   │   │       ├── technique/        # 秘技脚本
+│   │   │       └── bonus_ability/    # 额外能力脚本
+│   │   ├── light_cones/              # 光锥配置（每个光锥一个子目录）
+│   │   │   └── <light_cone_name>/
+│   │   │       ├── <light_cone_name>.json
+│   │   │       └── <light_cone_name>.py
+│   │   └── relics/                   # 遗器套装（每个套装一个子目录）
+│   │       └── <relic_set_name>/
+│   │           ├── head.json
+│   │           ├── hands.json
+│   │           ├── torso.json
+│   │           ├── feet.json
+│   │           ├── planar_sphere.json
+│   │           ├── link_rope.json
+│   │           └── <relic_set_name>_2_pc.py
+│   │           └── <relic_set_name>_4_pc.py
+│   ├── v1.1/                  # 新版本目录（仅存放发生变更的文件）
 │   └── ...
 ├── data/                      # 运行时数据文件
 │   └── hsr.db                 # SQLite 数据库文件
@@ -62,7 +88,7 @@ hsr-sim/
 │       │
 │       ├── models/            # 数据模型定义
 │       │   ├── __init__.py
-│       │   ├── schemas/       # 静态配置 Pydantic 模型（只读），用于读取configs目录下的数据
+│       │   ├── schemas/       # 静态配置 Pydantic 模型（只读），用于读取 configs 目录下的数据
 │       │   │   ├── __init__.py
 │       │   │   ├── enums.py   # 所有共享枚举（元素、命途、属性类型等）
 │       │   │   ├── character.py
@@ -85,10 +111,13 @@ hsr-sim/
 │       │   ├── factories.py   # 从配置创建实体的工厂函数
 │       │   ├── components/    # 运行时组件（Pydantic 模型）
 │       │   │   ├── __init__.py
-│       │   │   ├── battle_state.py  # HP, ATK, DEF, SPD, Energy 等
-│       │   │   ├── resources.py     # 叠层、特殊能量
-│       │   │   ├── identity.py      # 身份标识（关联配置ID）
-│       │   │   └── ...
+│       │   │   ├── battle_stats.py    # 最终战斗属性（HP/ATK/DEF/SPD）
+│       │   │   ├── base_stats.py      # 裸装属性
+│       │   │   ├── equipment.py       # 装备引用
+│       │   │   ├── skill_state.py     # 技能槽位、冷却
+│       │   │   ├── buff.py            # Buff 容器
+│       │   │   ├── resources.py       # 叠层、特殊能量
+│       │   │   └── identity.py        # 身份标识（关联配置ID和版本）
 │       │   └── systems/       # ECS 系统处理器
 │       │       ├── __init__.py
 │       │       ├── health_system.py
@@ -96,29 +125,28 @@ hsr-sim/
 │       │       ├── damage_system.py
 │       │       └── ...
 │       │
-│       ├── events/            # 事件总线
+│       ├── events/            # 事件总线（基于 eventure）
 │       │   ├── __init__.py
-│       │   └── ...
+│       │   ├── bus.py         # EventBus 封装
+│       │   ├── base.py        # GameEvent 基类
+│       │   ├── game_events.py # 具体事件类
+│       │   └── commands.py    # 命令事件
 │       │
 │       ├── hooks/             # Hook 机制（流程干预）
 │       │   ├── __init__.py
-│       │   └── ...
+│       │   ├── chain.py       # HookChain 实现
+│       │   └── battle_hooks.py # 战斗 Hook 协议
 │       │
-│       ├── skills/            # 技能脚本系统
+│       ├── skills/            # 技能脚本框架
 │       │   ├── __init__.py
-│       │   ├── base.py        # BaseSkill, BasePassive 抽象类
+│       │   ├── base.py        # BaseSkill 抽象类
 │       │   ├── context.py     # SkillContext 依赖注入容器
 │       │   ├── manager.py     # SkillManager 加载与执行
-│       │   ├── active/        # 主动技能脚本
-│       │   │   ├── basic_attack_1001.py
-│       │   │   └── ...
-│       │   └── passive/       # 被动/天赋脚本
-│       │       ├── blade_hellscape.py
-│       │       └── ...
+│       │   └── loader.py      # 动态脚本加载器
 │       │
 │       ├── services/          # 业务服务层
 │       │   ├── __init__.py
-│       │   ├── config_loader.py   # 静态配置加载与缓存
+│       │   ├── config_loader.py   # 静态配置加载与缓存（多版本合并）
 │       │   ├── stat_calculator.py # 属性计算服务
 │       │   └── relic_generator.py # 遗器随机生成服务
 │       │
@@ -132,9 +160,9 @@ hsr-sim/
 │       ├── utils/             # 通用工具
 │       │   ├── __init__.py
 │       │   ├── db_session.py  # SQLAlchemy 会话管理
-│       │   └── id_generator.py
+│       │   └── import_utils.py # 动态导入工具
 │       │
-│       └── logger/
+│       └── logger/            # 日志模块
 │
 └── tests/                     # 单元测试目录
     ├── __init__.py
@@ -154,10 +182,10 @@ hsr-sim/
 | **运行时状态** | ECS 组件 | `ecs/components/` (Pydantic) | **频繁修改** | 可序列化存档 |
 | **用户实例数据** | SQLite/PostgreSQL | `models/db/` (SQLAlchemy) | 用户操作修改 | 持久化 |
 
-### 4.2 配置版本化
+### 4.2 配置版本化（增量复制与合并）
 
-- 每次平衡性调整时，新建一个目录，版本号递增，并从上一版本复制整套 `configs/<old_version>/` 到 `configs/<new_version>/` 后再修改目标项。
-- 扫描目录时，先按照版本号排序，从旧向新加载，并合并同一角色的不同版本。（同一角色所有文件命名一致，但是版本目录不同）
+- 每次平衡性调整时，将上一版本的整套配置复制到新版本目录（如 `v1.1`），再对目标文件进行修改。
+- 启动时扫描所有版本目录，按版本号从小到大加载，后加载的配置覆盖同 ID 的旧配置（内存中保留所有版本，查询时默认返回最新版本，亦可按需指定历史版本）。
 - 用户角色实例记录创建时的 `config_version` 字段，确保加载旧存档时使用当时版本的配置，保证数值稳定。
 - 对局记录同样绑定 `config_version`，确保战斗回放可复现。
 
@@ -166,7 +194,7 @@ hsr-sim/
 ```mermaid
 flowchart LR
     subgraph 静态配置
-        A1[configs/current/ JSON]
+        A1[configs/ JSON + 脚本]
         A2[ConfigLoader 缓存]
     end
     subgraph 用户数据
@@ -198,7 +226,7 @@ flowchart LR
 
 ### 5.1 `core/` — 核心配置与基础组件
 
-- **`config.py`**：定义全局设置，包含项目根路径、配置目录等。
+- **`config.py`**：定义全局设置类 `Settings`，包含项目根路径、配置目录、数据库 URL 等。
 - **`exceptions.py`**：自定义异常类，如 `ConfigNotFoundError`、`SkillExecutionError`。
 
 ### 5.2 `models/` — 数据模型
@@ -209,9 +237,9 @@ flowchart LR
 - **特点**：所有字段均有类型校验，提供 `model_validate` 方法。
 - **关键文件**：
   - `enums.py`：集中定义所有枚举（`Element`, `Path`, `StatType`, `SkillType` 等），被其他模块广泛引用。
-  - `character.py`：`CharacterConfig`，包含基础属性、技能槽位、星魂、行迹和 `energy`（`energy_type` + `max_energy`）等。
-  - `skill.py`：`SkillConfig`，包含技能类型、脚本路径。所有技能逻辑全部使用脚本以保证统一。
-  - `light_cone.py`、`relic.py`：遗器和光锥的静态定义，包含被动脚本。
+  - `character.py`：`CharacterConfig`，包含基础属性、技能槽位、星魂、行迹，以及 `energy` 字段（内含 `energy_type` 和 `max_energy`）。
+  - `skill.py`：`SkillConfig`，包含技能类型、脚本路径、消耗、冷却、数值参数。所有技能逻辑全部由 Python 脚本实现以保证灵活性。
+  - `light_cone.py`、`relic.py`：遗器和光锥的静态定义，包含被动脚本路径。
 
 #### `models/db/` — ORM 模型（SQLAlchemy）
 
@@ -225,17 +253,21 @@ flowchart LR
 
 ### 5.3 `ecs/` — 运行时 ECS
 
-- **`world.py`**：封装 Esper 上下文管理。
-- **`components/`**：定义所有运行时组件。使用 Pydantic 模型以便序列化和校验。组件分为：
-  - **战斗状态**：`HealthComponent`, `AttackComponent`, `EnergyComponent` 等。
-  - **资源与叠层**：`StackComponent`, `CustomEnergyComponent`。
-  - **身份标识**：`CharacterIdentityComponent`（存储 `config_id` 和 `config_version`）。
+- **`components/`**：定义所有运行时组件。使用 Pydantic 模型以便序列化和校验。组件按职责拆分：
+  - `base_stats.py`：裸装属性（来自静态配置，战斗期间不变）。
+  - `battle_stats.py`：最终战斗属性（受装备、Buff 影响），由 `StatCalculator` 计算并维护。
+  - `equipment.py`：记录当前装备的光锥 ID 和遗器实例 ID。
+  - `skill_state.py`：技能槽位（`SkillSlotsComponent`）和冷却（`CooldownComponent`）。
+  - `buff.py`：Buff/Debuff 容器（`BuffContainerComponent`）。
+  - `resources.py`：叠层（`StackComponent`）和特殊能量（`CustomEnergyComponent`）。
+  - `identity.py`：身份标识（`CharacterIdentityComponent`），存储 `config_id`、`name`、`version`。
 - **`systems/`**：实现具体的游戏逻辑，每个 System 继承 `esper.Processor`，在 `process()` 中批量处理实体。
 - **`factories.py`**：提供工厂函数，根据静态配置和用户实例数据创建完整的运行时实体。
 
 ### 5.4 `events/` — 事件总线
 
-- **`bus.py`**：使用 Eventure 实现 `EventBus` 类，支持按优先级订阅、发布事件，并记录事件日志（用于回放）。
+- 基于 `eventure` 库实现全局事件总线。
+- **`bus.py`**：封装 `EventBus` 类，提供订阅、发布、日志记录等功能。
 - **`base.py`**：定义 `GameEvent` 基类（Pydantic 模型），包含 `event_type`、`tick`、`data` 等通用字段。
 - **`game_events.py`**：具体事件类，如 `DamageDealtEvent`, `EntityDiedEvent`, `TurnStartEvent`。
 - **`commands.py`**：命令类事件（如 `UseSkillCommand`），代表玩家或 AI 的意图，由相应 System 处理。
@@ -249,12 +281,13 @@ flowchart LR
 
 - **`base.py`**：定义 `BaseSkill` 抽象类，要求子类实现 `execute(caster, targets)` 方法。被动技能可继承 `BasePassive`。
 - **`context.py`**：`SkillContext` 数据类，作为依赖注入容器，向脚本提供 `world`、`event_bus`、`hook_chain`、`config_loader` 等服务的访问接口，限制脚本对内部状态的随意修改。
-- **`manager.py`**：`SkillManager` 负责根据 `skill_id` 动态导入对应的脚本类、实例化并执行。
+- **`loader.py`**：`SkillScriptLoader` 负责从指定版本目录动态导入技能脚本类。
+- **`manager.py`**：`SkillManager` 负责根据技能 ID 和版本号获取配置，加载脚本类，执行技能。
 
 ### 5.7 `services/` — 业务服务
 
-- **`config_loader.py`**：单例模式，负责加载指定版本的静态配置 JSON 文件，解析为 Pydantic 模型并缓存在内存中，提供 `get_character(version, id)` 等接口。
-- **`stat_calculator.py`**：属性计算服务，汇总角色的基础属性、遗器、光锥、Buff 等所有来源，计算出最终战斗属性。
+- **`config_loader.py`**：单例模式，扫描 `configs/` 下所有版本目录，按版本号升序加载 JSON 配置并合并到内存缓存；提供按角色名/版本查询配置的接口；同时收集脚本模块路径供动态导入。
+- **`stat_calculator.py`**：属性计算服务，汇总角色的基础属性、遗器、光锥、Buff 等所有来源，计算出最终战斗属性并更新 `BattleStatsComponent`。
 - **`relic_generator.py`**：遗器随机生成服务，根据规则生成符合约束的遗器实例并存入数据库。
 
 ### 5.8 `repositories/` — 数据访问层
@@ -265,31 +298,33 @@ flowchart LR
 ### 5.9 `utils/` — 工具模块
 
 - **`db_session.py`**：创建 SQLAlchemy 引擎和会话工厂，提供 `get_db()` 上下文管理器或依赖注入函数。
+- **`import_utils.py`**：动态导入工具，根据模块路径字符串导入具体的类。
 
 ## 6. 关键流程示例
 
-### 6.0 编辑角色
+### 6.1 编辑角色配置（Mock UI）
 
-1. 遍历 configs 目录，扫出来所有角色配置。默认
+1. 遍历 `configs/` 目录，通过 `ConfigLoader` 获取所有可用角色列表及版本信息。
+2. 用户选择目标角色，界面展示其所有可用版本（默认选中最新）。
+3. 用户可调整星魂、装备的光锥、遗器等，所有修改存储到数据库的 `UserCharacter` 及相关表中。
 
-### 6.1 创建角色并进入战斗
+### 6.2 创建角色并进入战斗
 
-> 假设用户已经有实例被存储于数据库。
-> 数据库中不含任何角色基础配置，全部动态加载。
+> 假设用户已有角色实例存储于数据库。数据库中不含任何角色基础配置，全部动态加载。
 
 1. 用户在界面选择角色实例（ID=1001，版本=v1.0）。
 2. `CharacterRepository` 从数据库加载 `UserCharacter` 记录。
 3. `ConfigLoader` 根据 `v1.0` 加载对应的 `CharacterConfig`。
-4. `factories.create_character_from_config()` 创建 ECS 实体并添加基础组件；根据 `config.energy` 自动挂载标准能量或特殊能量组件。
+4. `factories.create_character_from_config()` 创建 ECS 实体并添加基础组件；根据 `config.energy.energy_type` 自动挂载标准能量组件或自定义能量组件。
 5. `factories.apply_user_data()` 根据用户实例数据（星魂、遗器、光锥）修改组件属性。
 6. 实体加入战斗世界，相关 System 开始运作。
 
-### 6.2 技能释放流程
+### 6.3 技能释放流程
 
 1. 玩家/AI 发布 `UseSkillCommand(skill_id=1001, caster=ent, targets=[...])`。
 2. `SkillManager` 收到命令，通过 `config_loader` 获取 `SkillConfig`。
 3. 检查 `CooldownComponent` 和资源消耗（通过 `HookChain` 允许祝福修改消耗）。
-4. 动态导入技能脚本，实例化并传入 `SkillContext`。
+4. `SkillScriptLoader` 动态导入技能脚本，实例化并传入 `SkillContext`。
 5. 调用 `script.execute()`，脚本内部通过 `context` 访问 ECS 组件、发布事件、调用钩子。
 6. 技能执行完毕后，更新冷却组件，发布 `SkillCastCompleteEvent`。
 
@@ -297,7 +332,7 @@ flowchart LR
 
 ### 7.1 代码风格
 
-- 遵循 Google Python Style，使用 Ruff 进行 lint 和格式化。
+- 遵循 **Google Python Style Guide**，使用 Ruff 进行 lint 和格式化。
 - 类型注解必须完整（函数参数、返回值）。
 - 使用 `pydantic.Field` 进行字段约束和描述。
 
@@ -320,13 +355,13 @@ flowchart LR
 
 ## 8. 下一步行动计划
 
-1. **数据层完善**：完成 `ConfigLoader` 缓存机制和版本化支持，编写测试验证。
+1. **数据层完善**：完成 `ConfigLoader` 的多版本合并缓存机制，编写测试验证。
 2. **基础 ECS 系统**：实现 `HealthSystem`、`DeathSystem`，完成最简单的战斗循环。
-3. **事件总线**：实现 `EventBus` 及基础事件，与 ECS 系统集成。
+3. **事件总线**：集成 `eventure` 并定义基础事件，与 ECS 系统对接。
 4. **技能管理器**：实现 `SkillManager` 和 `SkillContext`，完成第一个简单技能脚本。
 5. **用户实例与存档**：完善数据库 ORM 模型和 Repository，实现角色配置保存/加载。
 6. **交互界面**：基于 Textual 实现角色配置管理 TUI。
 
 ---
 
-这份文档将作为后续开发的蓝图。如果在实施过程中发现需要调整的地方，请及时更新本文档以保持同步。
+*本文档将随项目演进持续更新。如有架构调整，请及时同步本文档以确保信息一致。*

@@ -88,7 +88,8 @@ def parse_args() -> Namespace:
 def _write_text(path: Path, content: str) -> None:
     if path.exists():
         raise FileExistsError(f"File already exists: {path}")
-    path.write_text(content, encoding="utf-8")
+    with path.open("w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
 
 
 def _write_json(path: Path, payload: dict) -> None:
