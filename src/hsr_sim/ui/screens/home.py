@@ -27,7 +27,8 @@ class HomeActionsApp(Protocol):
     def action_manage_relics(self) -> None: ...
 
     def action_start_battle_sim(self) -> None: ...
-
+        # 跳转到战斗准备界面
+        # 配置战斗信息后开始模拟
 
 class HomeScreen(Screen):
     DEFAULT_CSS = """

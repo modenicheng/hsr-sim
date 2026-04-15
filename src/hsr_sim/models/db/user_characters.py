@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from .battle_record import Battle, BattleRecord
     from .user_light_cones import UserLightCone
     from .user_relics import UserRelic
+    from .user_team import UserTeam
 
 
 class UserCharacter(Base):
@@ -46,4 +47,9 @@ class UserCharacter(Base):
         back_populates="user_characters",
         viewonly=True,
         overlaps="battle_records,records,battle,user_character",
+    )
+    teams: Mapped[list["UserTeam"]] = relationship(
+        "UserTeam",
+        secondary="user_team_characters",
+        back_populates="characters",
     )

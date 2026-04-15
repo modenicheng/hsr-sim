@@ -6,8 +6,8 @@ from hsr_sim.models.db.base import Base
 from hsr_sim.models.db.user_characters import UserCharacter
 from hsr_sim.repositories.light_cone_repo import LightConeRepository
 from hsr_sim.repositories.relic_repo import RelicRepository
-from hsr_sim.services.create_light_cones import LightConeService
-from hsr_sim.services.create_relics import RelicService
+from hsr_sim.services.create_light_cone_instance import LightConeService
+from hsr_sim.services.create_relic_instance import RelicService
 
 
 def _build_session() -> Session:
