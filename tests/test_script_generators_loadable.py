@@ -1,5 +1,6 @@
 from scripts import create_character
 from scripts import create_buff
+from scripts import create_enemy
 from scripts import create_light_cone
 from scripts import create_relic_set
 from hsr_sim.skills.script_loader import BaseSkill
@@ -95,3 +96,24 @@ def test_buff_generator_outputs_loadable_character_script(tmp_path, monkeypatch)
     )
 
     assert cls.__name__ == "EpsilonBuff"
+
+
+def test_enemy_generator_outputs_loadable_scripts(tmp_path, monkeypatch):
+    configs_root = tmp_path / "configs"
+    monkeypatch.setattr(create_enemy, "CONFIGS_DIR", configs_root)
+    monkeypatch.setattr("hsr_sim.skills.script_loader.PROJECT_ROOT", tmp_path)
+
+    create_enemy.run_create_enemy("zeta_enemy", "v1.0")
+
+    loader = DynamicClassLoader()
+    skill_cls = loader.load_class(
+        "configs.v1_0.enemies.zeta_enemy.skills.zeta_enemy_skill",
+        expected_base_class=BaseSkill,
+    )
+    passive_cls = loader.load_class(
+        "configs.v1_0.enemies.zeta_enemy.passives.zeta_enemy_passive",
+        expected_base_class=BaseSkill,
+    )
+
+    assert skill_cls.__name__ == "ZetaEnemySkill"
+    assert passive_cls.__name__ == "ZetaEnemyPassive"

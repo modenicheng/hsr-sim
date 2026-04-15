@@ -129,18 +129,82 @@ configs/<version>/characters/<character_name>/buffs/<buff_name>/
 - **全局 Buff**：放在 `configs/<version>/buffs/` 下，适合通用增益、减益、召唤物效果等可复用配置。
 - **角色专属 Buff**：放在 `configs/<version>/characters/<character_name>/buffs/` 下，用于只服务于单个角色机制的特殊效果。
 - **加载优先级**：当同名或同 ID 的 Buff 同时存在时，角色专属配置优先于全局配置。
+### Create an enemy
+
+```sh
+uv run .\scripts\create_enemy.py <enemy_name...> [--version v1.0] [-f]
+```
+
+- `enemy_name...`：必填，可输入一个或多个敌人名，仅允许英文字符和 `_`
+- `--version`：可选，版本号，支持 `x.x` 或 `vx.x`，默认 `v1.0`
+- `-f / --force`：可选，强制覆写已存在的同名敌人目录
+
+输出目录：
+
+```text
+configs/<version>/enemies/<enemy_name>/
+```
+
+敌人配置包含：
+
+- 主 JSON：`<enemy_name>.json`，包含 ID、名称、属性、弱点、韧性、技能与被动。
+- 技能脚本：`skills/<enemy_name>_skill.py`
+- 被动脚本：`passives/<enemy_name>_passive.py`
+
+### Migrate character configs
+
+```sh
+uv run .\scripts\migrate_character_configs.py [--version v1.0] [--write]
+```
+
+- `--version`：可选，目标版本，支持 `x.x` 或 `vx.x`。默认迁移所有版本。
+- `--write`：可选，写回更改到文件。不传此参数则为 **dry-run** 模式，仅显示统计。
+
+功能：
+
+- 扫描指定版本（或所有版本）的角色配置文件。
+- 补齐新增的 schema 字段（如 `energy` 等）。
+- **不覆盖**已存在的值，仅填补缺失字段。
+- 迁移后的配置必须通过 Pydantic schema 校验。
+
+### Validate configs
+
+```sh
+uv run .\scripts\validate_configs.py [--version v1.0]
+```
+
+- `--version`：可选，校验特定版本，支持 `x.x` 或 `vx.x`。默认校验所有版本。
+
+功能：
+
+- **ID 唯一性检查**：扫描所有配置文件，检测全局 ID 重复。
+- **JSON 格式校验**：验证 JSON 文件的格式有效性。
+- **Python 脚本规范检查**：
+  - 语法错误检测
+  - 验证导入 `BaseSkill` 类
+  - 验证类定义存在
+  - 检查 `execute` 方法
+
+输出：使用 `rich` 生成美观的终端报告，包含错误表、警告表和汇总统计。
 
 ### Examples
+
+使用完整命令：
 
 ```sh
 uv run .\scripts\create_character.py seele -f
 uv run .\scripts\create_relic_set.py rutilant_arena -t planar_ornaments
 uv run .\scripts\create_light_cone.py in_the_night -v v1.0
+uv run .\scripts\create_buff.py team_buff
+uv run .\scripts\create_enemy.py mara_struck_soldier
+uv run .\scripts\migrate_character_configs.py --write
+uv run .\scripts\validate_configs.py
 
-# batch mode
+# 批量模式
 uv run .\scripts\create_character.py seele sunday -f
 uv run .\scripts\create_relic_set.py genius_of_brilliant_stars rutilant_arena -t relics
 uv run .\scripts\create_light_cone.py in_the_night a_grounded_ascent -v v1.0
+uv run .\scripts\create_enemy.py mara_struck_soldier weakling -f
 ```
 
 ## ID 约定
@@ -161,6 +225,13 @@ uv run .\scripts\create_light_cone.py in_the_night a_grounded_ascent -v v1.0
 
 - `30xxxxxx`：光锥主配置（Light Cone，2+6 位）
   - `31xxxxxx`：光锥被动（Passive Skill）
+
+- `40xxxxxx`：敌人主配置（Enemy，2+6 位）
+  - `41xxxxxx`：敌人技能（Enemy Skill）
+  - `42xxxxxx`：敌人被动（Enemy Passive）
+
+- `50xxxxxx`：全局增益/减益（Global Buff，2+6 位）
+- `51xxxxxx`：角色专属增益/减益（Character Buff，2+6 位）
 
 说明：
 

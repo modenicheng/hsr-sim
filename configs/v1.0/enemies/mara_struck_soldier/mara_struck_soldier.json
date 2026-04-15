@@ -1,0 +1,29 @@
+{
+  "id": 40000000,
+  "name": "mara_struck_soldier",
+  "base_hp": 1000.0,
+  "base_atk": 500.0,
+  "base_def": 500.0,
+  "base_spd": 100.0,
+  "base_weakness": [
+    "physical"
+  ],
+  "toughness": 60,
+  "skills": [
+    {
+      "id": 41000000,
+      "name": "mara_struck_soldier_skill",
+      "description": "TODO: fill skill description",
+      "target_type": "single_target",
+      "script": "skills/mara_struck_soldier_skill"
+    }
+  ],
+  "passives": [
+    {
+      "id": 42000000,
+      "name": "mara_struck_soldier_passive",
+      "description": "TODO: fill passive description",
+      "script": "passives/mara_struck_soldier_passive"
+    }
+  ]
+}
