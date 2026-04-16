@@ -13,9 +13,8 @@ from src.hsr_sim.models.character_status import CharacterStatus
 
 
 class HealthSystem(Processor):
-    """
-    血量系统：HP 唯一写入口。
-    
+    """血量系统：HP 唯一写入口。
+
     职责：
     1. 监听 DAMAGE_DEALT 事件，扣除 HP
     2. 监听 HEALING_DONE 事件，恢复 HP
@@ -79,9 +78,9 @@ class HealthSystem(Processor):
         health = esper.try_component(entity_id, HealthComponent)
         if not health:
             return
-        
+
         health.value = max(0, health.value - damage)
-        
+
         # 检查是否倒下
         if health.value <= 0:
             self._set_knocked_down(entity_id)
@@ -90,13 +89,13 @@ class HealthSystem(Processor):
         """应用治疗，恢复 HP。"""
         health = esper.try_component(entity_id, HealthComponent)
         status = esper.try_component(entity_id, CharacterStatusComponent)
-        
+
         if not health:
             return
-        
+
         old_value = health.value
         health.value = min(health.max_value, health.value + healing)
-        
+
         # 如果从倒下状态恢复，设为 ALIVE
         if status and status.status == CharacterStatus.KNOCKED_DOWN and health.value > 0:
             self._set_alive(entity_id)
@@ -106,7 +105,7 @@ class HealthSystem(Processor):
         status = esper.try_component(entity_id, CharacterStatusComponent)
         if status and status.status != CharacterStatus.KNOCKED_DOWN:
             status.status = CharacterStatus.KNOCKED_DOWN
-            
+
             # 发布 CHARACTER_KNOCKED_DOWN 事件
             self.event_stream.publish_character_knocked_down_event(
                 tick=self.event_stream.event_log.current_tick,
@@ -118,7 +117,7 @@ class HealthSystem(Processor):
         status = esper.try_component(entity_id, CharacterStatusComponent)
         if status and status.status == CharacterStatus.KNOCKED_DOWN:
             status.status = CharacterStatus.ALIVE
-            
+
             # 发布 CHARACTER_KNOCKED_DOWN_RESTORED 事件
             self.event_stream.publish_character_knocked_down_restored_event(
                 tick=self.event_stream.event_log.current_tick,

@@ -2,7 +2,7 @@
 import esper
 
 from .base import BaseSkill
-from src.hsr_sim.ecs.components import AttackComponent
+from src.hsr_sim.ecs.components import AttackComponent, BuffContainerComponent, CritDamageComponent, CritRateComponent
 from src.hsr_sim.hooks.hook_points import HookPoint
 
 
@@ -61,7 +61,8 @@ class BaseDamageSkill(BaseSkill):
         atk_component = esper.try_component(caster, AttackComponent)
         if not atk_component:
             return 0.0
-
+        atk = atk_component.value
+        # for esper.try_components(caster, Attack)
         # 获取伤害倍率（简化版：默认 1.0）
         multiplier = 1.0
-        return atk_component.value * multiplier
+        return atk * multiplier

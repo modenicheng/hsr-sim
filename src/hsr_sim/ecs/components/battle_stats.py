@@ -27,3 +27,15 @@ class SpeedComponent(BaseModel):
 
 class ActionValueComponent(BaseModel):
     value: float = Field(gt=0)
+
+
+class ShieldComponent(BaseModel):
+    value: float = Field(ge=0)
+
+
+class CritRateComponent(BaseModel):
+    value: float = Field(ge=0, le=1)
+
+
+class CritDamageComponent(BaseModel):
+    value: float = Field(ge=0)

@@ -10,5 +10,3 @@ class SundayTechnique(BaseSkill):
         """TODO: implement behavior."""
         _ = args, kwargs
         return None
-
-

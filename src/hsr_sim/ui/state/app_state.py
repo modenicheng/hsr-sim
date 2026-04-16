@@ -12,3 +12,21 @@ class AppState:
             3: None,
             4: None
         }  # 当前队伍，键为位置（1-4），值为角色对象或 None
+
+# | ActionBar |
+# |  character|
+# |   ...     |
+# |   ...     |
+# |   ...     |
+# |           |
+# |           |
+# |           |
+# |           |
+# |           |
+# |           |
+# |           |
+# |           |
+# |           |       CharacterName[xxx%] ENERGY
+# |           |       -------------[HPBAR]
+# |           |       -------------[SHIELD BAR]
+# |           |       [^][v][][][][][][]  <- BUFF ICONS

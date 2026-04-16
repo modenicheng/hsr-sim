@@ -1,5 +1,6 @@
 from esper import Processor
 
+
 class SpeedSystem(Processor):
     """已降级：行动值管理现已由 TurnSystem 负责。
 
