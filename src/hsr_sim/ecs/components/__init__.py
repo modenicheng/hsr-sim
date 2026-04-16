@@ -3,18 +3,21 @@ from .battle_stats import (
     AttackComponent,
     DefenseComponent,
     SpeedComponent,
+    ActionValueComponent,
 )
 from .energy import StandardEnergyComponent, SpecialEnergyComponent
 from .identity import CharacterIdentityComponent
 from .equipment import EquippedRelicsComponent, EquippedLightConeComponent
 from .buffs import ActiveBuffComponent, BuffContainerComponent, StackComponent
 from .skills import SkillSlotsComponent, CooldownComponent
+from .status import CharacterStatusComponent
 
 __all__ = [
     "HealthComponent",
     "AttackComponent",
     "DefenseComponent",
     "SpeedComponent",
+    "ActionValueComponent",
     "StandardEnergyComponent",
     "SpecialEnergyComponent",
     "CharacterIdentityComponent",
@@ -25,4 +28,5 @@ __all__ = [
     "StackComponent",
     "SkillSlotsComponent",
     "CooldownComponent",
+    "CharacterStatusComponent",
 ]

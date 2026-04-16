@@ -25,10 +25,10 @@ def create_character_from_config(char_name: str, version: str) -> int:
     # 挂载基础战斗属性组件
     esper.add_component(
         entity,
-        HealthComponent(hp=char_config.base_hp, max_hp=char_config.base_hp))
-    esper.add_component(entity, AttackComponent(atk=char_config.base_atk))
-    esper.add_component(entity, DefenseComponent(defense=char_config.base_def))
-    esper.add_component(entity, SpeedComponent(spd=char_config.base_spd))
+        HealthComponent(value=char_config.base_hp, max_value=char_config.base_hp))
+    esper.add_component(entity, AttackComponent(value=char_config.base_atk))
+    esper.add_component(entity, DefenseComponent(value=char_config.base_def))
+    esper.add_component(entity, SpeedComponent(value=char_config.base_spd))
 
     # 根据角色配置的能量类型挂载能量组件
     if char_config.energy.energy_type == "standard":

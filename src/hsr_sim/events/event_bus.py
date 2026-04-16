@@ -43,8 +43,10 @@ class GameEventBus:
         return self._event_log
 
     def _normalize_event_type(self, event_type: EventType | str) -> str:
-        if isinstance(event_type, EventType):
-            return event_type.value
+        # 兼容不同导入路径下的同名 Enum（如 hsr_sim.* 与 src.hsr_sim.*）
+        value = getattr(event_type, "value", None)
+        if value is not None:
+            return str(value)
         return str(event_type)
 
     def _ensure_tick(self, tick: int) -> None:
@@ -54,6 +56,7 @@ class GameEventBus:
             self._event_log.advance_tick()
 
     def _fanout(self, event_type: str) -> Callable[[Event], None]:
+
         def _dispatch(event: Event) -> None:
             for subscriber in list(self._subscriptions.get(event_type, [])):
                 subscriber.callback(event)
@@ -87,12 +90,10 @@ class GameEventBus:
                 order=self._next_order,
                 callback=handler,
                 handle=handle,
-            )
-        )
+            ))
         self._next_order += 1
         self._subscriptions[event_name].sort(
-            key=lambda item: (-item.priority, item.order)
-        )
+            key=lambda item: (-item.priority, item.order))
         return handle
 
     def unsubscribe(self, handle: SubscriptionHandle) -> bool:
@@ -101,7 +102,9 @@ class GameEventBus:
             return False
 
         before = len(subscribers)
-        subscribers[:] = [entry for entry in subscribers if entry.handle != handle]
+        subscribers[:] = [
+            entry for entry in subscribers if entry.handle != handle
+        ]
         removed = len(subscribers) != before
         if removed and not subscribers:
             unsubscribe = self._unsubscribe_hooks.pop(handle.event_type, None)
@@ -204,6 +207,106 @@ class GameEventBus:
                 tick=tick,
                 type=EventType.SKILL_EXECUTED,
                 data=data,
+                timestamp=timestamp,
+            ),
+            parent_event=parent_event,
+        )
+
+    def publish_character_knocked_down_event(
+        self,
+        *,
+        tick: int,
+        entity_id: int,
+        timestamp: float | None = None,
+        parent_event: Event | None = None,
+    ) -> Event:
+        return self.publish(
+            GameEvent(
+                tick=tick,
+                type=EventType.CHARACTER_KNOCKED_DOWN,
+                data={"entity_id": entity_id},
+                timestamp=timestamp,
+            ),
+            parent_event=parent_event,
+        )
+
+    def publish_character_knocked_down_restored_event(
+        self,
+        *,
+        tick: int,
+        entity_id: int,
+        timestamp: float | None = None,
+        parent_event: Event | None = None,
+    ) -> Event:
+        return self.publish(
+            GameEvent(
+                tick=tick,
+                type=EventType.CHARACTER_KNOCKED_DOWN_RESTORED,
+                data={"entity_id": entity_id},
+                timestamp=timestamp,
+            ),
+            parent_event=parent_event,
+        )
+
+    def publish_action_decision_needed_event(
+        self,
+        *,
+        tick: int,
+        actor_id: int,
+        timestamp: float | None = None,
+        parent_event: Event | None = None,
+    ) -> Event:
+        return self.publish(
+            GameEvent(
+                tick=tick,
+                type=EventType.ACTION_DECISION_NEEDED,
+                data={"actor_id": actor_id},
+                timestamp=timestamp,
+            ),
+            parent_event=parent_event,
+        )
+
+    def publish_turn_skipped_event(
+        self,
+        *,
+        tick: int,
+        entity_id: int,
+        reason: str = "knocked_down",
+        timestamp: float | None = None,
+        parent_event: Event | None = None,
+    ) -> Event:
+        return self.publish(
+            GameEvent(
+                tick=tick,
+                type=EventType.TURN_SKIPPED,
+                data={
+                    "entity_id": entity_id,
+                    "reason": reason
+                },
+                timestamp=timestamp,
+            ),
+            parent_event=parent_event,
+        )
+
+    def publish_speed_changed_event(
+        self,
+        *,
+        tick: int,
+        entity_id: int,
+        old_speed: float,
+        new_speed: float,
+        timestamp: float | None = None,
+        parent_event: Event | None = None,
+    ) -> Event:
+        return self.publish(
+            GameEvent(
+                tick=tick,
+                type=EventType.SPEED_CHANGED,
+                data={
+                    "entity_id": entity_id,
+                    "old_speed": old_speed,
+                    "new_speed": new_speed,
+                },
                 timestamp=timestamp,
             ),
             parent_event=parent_event,

@@ -16,25 +16,7 @@ from hsr_sim.core.exceptions import SkillTypeMismatchError
 from hsr_sim.models.db.user_characters import UserCharacter
 from hsr_sim.models.schemas.character import CharacterConfig
 from hsr_sim.services.config_loader import ConfigLoader
-
-
-@dataclass(slots=True)
-class SkillContext:
-    """技能上下文依赖容器。"""
-
-    world: Any = None
-    event_bus: Any = None
-    hook_chain: Any = None
-    config_loader: ConfigLoader | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
-
-
-class BaseSkill:
-    """技能脚本基类（可选）。"""
-
-    def __init__(self, context: SkillContext):
-        self.context = context
-
+from .base import BaseSkill, SkillContext
 
 def _snake_to_camel(name: str) -> str:
     return "".join(part.capitalize() for part in name.split("_"))
