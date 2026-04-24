@@ -6,7 +6,7 @@ from hsr_sim.ecs.components import CharacterIdentityComponent
 from hsr_sim.ecs.systems.energy_system import EnergySystem
 from hsr_sim.events.types import EventType
 
-from src.hsr_sim.events.models import GameEvent
+from hsr_sim.events.models import GameEvent
 
 
 SEELE_CONFIG_ID = 10000000

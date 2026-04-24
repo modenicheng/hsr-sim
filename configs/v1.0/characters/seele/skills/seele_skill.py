@@ -19,13 +19,16 @@ class SeeleSkill(BaseDamageSkill):
         self._turn_handle = None
         self._remaining_turns: dict[int, int] = {}
 
-    def execute(self, caster: int, targets: list[int]) -> bool:
+    def execute(self, caster: int, targets: list[int]) -> dict:
         self._ensure_stack(caster)
-        result = super().execute(caster, targets)
-        if result:
-            self._ensure_cleanup_listener()
-            self._apply_spd_buff(caster)
-        return result
+        super().execute(caster, targets)
+        self._ensure_cleanup_listener()
+        self._apply_spd_buff(caster)
+        return {
+            "effect": "damage",
+            "base_damage": 0,
+            "damage_type": self.damage_type,
+        }
 
     def _ensure_stack(self, entity_id: int):
         stack = esper.try_component(entity_id, StackComponent)
@@ -60,10 +63,10 @@ class SeeleSkill(BaseDamageSkill):
         if not stack or stack.stack_type != STACK_TYPE:
             return
 
-        speed.value -= SPD_BUFF_AMOUNT * stack.current
+        speed.speed_fix -= SPD_BUFF_AMOUNT * stack.current
         new_stacks = min(stack.current + 1, stack.max)
         stack.current = new_stacks
-        speed.value += SPD_BUFF_AMOUNT * new_stacks
+        speed.speed_fix += SPD_BUFF_AMOUNT * new_stacks
 
         self._remaining_turns[entity_id] = 2
 
@@ -85,7 +88,7 @@ class SeeleSkill(BaseDamageSkill):
         if stack and stack.stack_type == STACK_TYPE:
             speed = esper.try_component(entity_id, SpeedComponent)
             if speed:
-                speed.value -= SPD_BUFF_AMOUNT * stack.current
+                speed.speed_fix -= SPD_BUFF_AMOUNT * stack.current
             esper.remove_component(entity_id, StackComponent)
 
     @staticmethod

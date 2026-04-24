@@ -4,9 +4,9 @@ from esper import Processor
 import esper
 from eventure import Event
 
-from src.hsr_sim.ecs.components import BuffContainerComponent
-from src.hsr_sim.events.models import GameEvent
-from src.hsr_sim.events.types import EventType
+from hsr_sim.ecs.components import BuffContainerComponent
+from hsr_sim.events.models import GameEvent
+from hsr_sim.events.types import EventType
 
 
 class BuffSystem(Processor):

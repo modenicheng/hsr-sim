@@ -2,8 +2,8 @@
 import esper
 
 from .base import BaseSkill
-from src.hsr_sim.ecs.components import AttackComponent
-from src.hsr_sim.hooks.hook_points import HookPoint
+from hsr_sim.ecs.components import AttackComponent
+from hsr_sim.hooks.hook_points import HookPoint
 
 
 class BaseDamageSkill(BaseSkill):

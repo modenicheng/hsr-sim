@@ -7,6 +7,7 @@ from .battle_stats import (
     ShieldComponent,
     CritRateComponent,
     CritDamageComponent,
+    SkillPointComponent,
 )
 from .energy import StandardEnergyComponent, SpecialEnergyComponent
 from .identity import CharacterIdentityComponent
@@ -35,4 +36,5 @@ __all__ = [
     "ShieldComponent",
     "CritRateComponent",
     "CritDamageComponent",
+    "SkillPointComponent",
 ]

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from hsr_sim.services.config_loader import ConfigLoader
-from src.hsr_sim.events.types import EventType
+from hsr_sim.events.types import EventType
 
 
 @dataclass(slots=True)
@@ -31,7 +31,7 @@ class SkillContext:
         if self.event_bus is None:
             return
         # 简化版：直接发布事件
-        from src.hsr_sim.events.models import GameEvent
+        from hsr_sim.events.models import GameEvent
 
         event = GameEvent(
             tick=0,  # 由调用者决定

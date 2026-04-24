@@ -1,7 +1,7 @@
 from collections.abc import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from src.hsr_sim.core.config import PROJECT_ROOT
+from hsr_sim.core.config import PROJECT_ROOT
 
 # 数据库文件放在 data/ 目录
 DATABASE_URL = f"sqlite:///{PROJECT_ROOT / 'data' / 'hsr.db'}"

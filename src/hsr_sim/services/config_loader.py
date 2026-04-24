@@ -6,6 +6,7 @@ from typing import Any
 from hsr_sim.core.config import CONFIGS_DIR
 from hsr_sim.models.schemas.buff import BuffConfig
 from hsr_sim.models.schemas.character import CharacterConfig
+from hsr_sim.models.schemas.enemy import EnemyConfig
 from hsr_sim.models.schemas.light_cone import LightConeConfig
 from hsr_sim.models.schemas.relics import RelicConfig
 from hsr_sim.models.schemas.relics import RelicSetConfig
@@ -23,12 +24,14 @@ class ConfigLoader:
             "light_cones": {},
             "relics": {},
             "buffs": {},
+            "enemies": {},
         }
         self._id_cache: dict[str, dict[int, dict[str, dict[str, Any]]]] = {
             "characters": {},
             "light_cones": {},
             "relics": {},
             "buffs": {},
+            "enemies": {},
         }
         self._character_buff_cache: dict[
             int, dict[str, dict[str, dict[str, Any]]]
@@ -62,6 +65,7 @@ class ConfigLoader:
         version_path = CONFIGS_DIR / version
         self._load_characters(version, version_path / "characters")
         self._load_character_buffs(version, version_path / "characters")
+        self._load_enemies(version, version_path / "enemies")
         self._load_light_cones(version, version_path / "light_cones")
         self._load_relics(version, version_path / "relics")
         self._load_buffs(version, version_path / "buffs")
@@ -228,6 +232,30 @@ class ConfigLoader:
                 entity_id=lc_config.id,
             )
 
+    def _load_enemies(self, version: str, enemies_root: Path) -> None:
+        if not enemies_root.exists():
+            return
+        for enemy_dir in enemies_root.iterdir():
+            if not enemy_dir.is_dir():
+                continue
+            enemy_name = enemy_dir.name
+            json_file = enemy_dir / f"{enemy_name}.json"
+            if not json_file.exists():
+                continue
+            with json_file.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+            try:
+                enemy_config = EnemyConfig.model_validate(data)
+            except ValidationError:
+                continue
+            self._put_cache(
+                dataset="enemies",
+                name=enemy_name,
+                version=version,
+                payload={"config": enemy_config},
+                entity_id=enemy_config.id,
+            )
+
     def _load_relics(self, version: str, relics_root: Path) -> None:
         if not relics_root.exists():
             return
@@ -354,6 +382,11 @@ class ConfigLoader:
             return dataset.get(version)
         latest_ver = max(dataset.keys(), key=self._parse_version)
         return dataset[latest_ver]
+
+    def get_enemy_config(
+        self, name: str, version: str | None = None
+    ) -> dict[str, Any] | None:
+        return self._get_latest(self._cache["enemies"].get(name, {}), version)
 
     def get_character(
         self, name: str, version: str | None = None

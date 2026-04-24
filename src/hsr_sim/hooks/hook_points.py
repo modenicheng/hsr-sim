@@ -23,3 +23,6 @@ class HookPoint(str, Enum):
     BEFORE_CRIT_DETERMINATION = (
         "before_crit_determination"  # 暴击判定前，可修改暴击率
     )
+    BEFORE_CHARACTER_KNOCKED_DOWN = (
+        "before_character_knocked_down"  # 击倒判定前，可阻止/修改击倒逻辑
+    )

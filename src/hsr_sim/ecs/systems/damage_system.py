@@ -5,13 +5,13 @@ import random
 import esper
 from esper import Processor
 
-from src.hsr_sim.ecs.components import (
+from hsr_sim.ecs.components import (
     AttackComponent,
     CritDamageComponent,
     CritRateComponent,
     DefenseComponent,
 )
-from src.hsr_sim.hooks.hook_points import HookPoint
+from hsr_sim.hooks.hook_points import HookPoint
 
 
 class DamageSystem(Processor):

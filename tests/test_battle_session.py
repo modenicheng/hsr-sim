@@ -4,8 +4,8 @@ import esper
 import pytest
 from hsr_sim.services import config_loader
 
-from src.hsr_sim.battle.session import BattleSession
-from src.hsr_sim.ecs.components import (
+from hsr_sim.battle.session import BattleSession
+from hsr_sim.ecs.components import (
     AttackComponent,
     BuffContainerComponent,
     CharacterIdentityComponent,
@@ -14,8 +14,8 @@ from src.hsr_sim.ecs.components import (
     HealthComponent,
     SpeedComponent,
 )
-from src.hsr_sim.models.battle_state import BattleState, ActionInput
-from src.hsr_sim.models.character_status import CharacterStatus
+from hsr_sim.models.battle_state import BattleState, ActionInput
+from hsr_sim.models.character_status import CharacterStatus
 
 
 @pytest.fixture
@@ -64,14 +64,14 @@ def test_action_input_validation():
     assert action.targets == [2]
 
 
-def _create_combat_entity(
-    hp=1000, atk=100, defense=100, speed=100, identity=None
-):
+def _create_combat_entity(battle_session, hp=1000, atk=100, defense=100, speed=100, identity=None):
+    """Create entity inside BattleSession's world (v1.0)."""
+    esper.switch_world(battle_session.world.world_name)
     entity = esper.create_entity()
     esper.add_component(entity, HealthComponent(value=hp, max_value=hp))
     esper.add_component(entity, AttackComponent(value=atk))
     esper.add_component(entity, DefenseComponent(value=defense))
-    esper.add_component(entity, SpeedComponent(value=speed))
+    esper.add_component(entity, SpeedComponent(base_speed=speed))
     esper.add_component(
         entity,
         CharacterStatusComponent(status=CharacterStatus.ALIVE),
@@ -89,8 +89,8 @@ def _health_value(entity_id: int) -> float:
 
 
 def test_submit_action_applies_damage_and_advances_turn(battle_session):
-    attacker = _create_combat_entity(hp=1200, atk=120, defense=80, speed=120)
-    defender = _create_combat_entity(hp=900, atk=90, defense=90, speed=90)
+    attacker = _create_combat_entity(battle_session, hp=1200, atk=120, defense=80, speed=120)
+    defender = _create_combat_entity(battle_session, hp=900, atk=90, defense=90, speed=90)
 
     battle_session.start(team_ids=[attacker], enemy_ids=[defender])
     assert battle_session.state == BattleState.WAITING_ACTION
@@ -114,8 +114,8 @@ def test_submit_action_applies_damage_and_advances_turn(battle_session):
 def test_submit_action_unknown_type_returns_false_without_effect(
     battle_session,
 ):
-    attacker = _create_combat_entity(hp=1200, atk=120, defense=80, speed=120)
-    defender = _create_combat_entity(hp=900, atk=90, defense=90, speed=90)
+    attacker = _create_combat_entity(battle_session, hp=1200, atk=120, defense=80, speed=120)
+    defender = _create_combat_entity(battle_session, hp=900, atk=90, defense=90, speed=90)
 
     battle_session.start(team_ids=[attacker], enemy_ids=[defender])
     hp_before = _health_value(defender)
@@ -142,6 +142,7 @@ def test_submit_action_loads_skill_script_by_skill_id(
     char_config = payload["config"]
 
     attacker = _create_combat_entity(
+        battle_session,
         hp=1200,
         atk=120,
         defense=80,
@@ -152,7 +153,7 @@ def test_submit_action_loads_skill_script_by_skill_id(
             version="v1.0",
         ),
     )
-    defender = _create_combat_entity(hp=900, atk=90, defense=90, speed=90)
+    defender = _create_combat_entity(battle_session, hp=900, atk=90, defense=90, speed=90)
 
     class _FakeSkill:
         def __init__(self):

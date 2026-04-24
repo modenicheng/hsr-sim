@@ -5,24 +5,23 @@ from typing import Optional
 import esper
 from esper import Processor
 
-from src.hsr_sim.ecs.components import (
+from hsr_sim.ecs.components import (
     SpeedComponent,
     CharacterStatusComponent,
 )
-from src.hsr_sim.ecs.systems.action_queue import ActionQueue
-from src.hsr_sim.models.character_status import CharacterStatus
+from hsr_sim.ecs.systems.action_queue import ActionQueue
+from hsr_sim.models.character_status import CharacterStatus
 
 
 class TurnSystem(Processor):
     """HSR 行动值系统：
 
-    - action_value = 10000 / speed
+    - action_value = 10000 / final_speed
     - 升序排列，最小值先行动
-    - 行动后重新计算并回插队列
-    - 全队减去下一行动者的值以保持一致性
+    - 行动后重置行动者 AV，全队减去其 time_cost，归一化后重新排序
     """
 
-    # 浮点数比较精度
+    TRACK_LENGTH = 10000.0
     EPSILON = 1e-6
 
     def __init__(self, event_stream):
@@ -42,22 +41,24 @@ class TurnSystem(Processor):
             SpeedComponent, CharacterStatusComponent
         ):
             if status.status == CharacterStatus.ALIVE:
-                action_value = 10000.0 / spd.value
-                self.action_queue.push(ent, action_value)
+                self.action_queue.push(ent, spd.action_value)
 
+        self._normalize_queue()
         self._initialized = True
         self._advance_to_next_actor()
 
     def process(self):
-        """每帧处理（暂无操作，行动推进由 BattleSession 主循环控制）。"""
         pass
 
-    def _advance_to_next_actor(self) -> bool:
-        """推进到下一个行动者。
+    def _normalize_queue(self) -> None:
+        """将队列中最小 AV 归一化为 0，其余实体同步减去该值。"""
+        next_entry = self.action_queue.peek_next()
+        if next_entry is not None:
+            _, min_av = next_entry
+            if min_av > self.EPSILON:
+                self.action_queue.subtract_all(min_av)
 
-        Returns:
-            是否成功推进（队列非空）
-        """
+    def _advance_to_next_actor(self) -> bool:
         next_actor = self.action_queue.peek_next()
         if next_actor is None:
             self.current_actor_id = None
@@ -66,24 +67,20 @@ class TurnSystem(Processor):
         actor_id, _ = next_actor
         self.current_actor_id = actor_id
 
-        # 检查是否倒下，若倒下则发布 TURN_SKIPPED 并继续下一位
         actor_status = esper.try_component(actor_id, CharacterStatusComponent)
         if actor_status and actor_status.status == CharacterStatus.KNOCKED_DOWN:
-            self.action_queue.pop_next()  # 移除倒下角色
+            self.action_queue.pop_next()
             self.event_stream.publish_turn_skipped_event(
                 tick=self.current_tick,
                 entity_id=actor_id,
                 reason="knocked_down",
             )
-            return self._advance_to_next_actor()  # 递归检查下一位
+            return self._advance_to_next_actor()
 
-        # 发布回合开始事件
         self.event_stream.publish_turn_started_event(
             tick=self.current_tick,
             entity_id=actor_id,
         )
-
-        # 发布行动决策事件
         self.event_stream.publish_action_decision_needed_event(
             tick=self.current_tick,
             actor_id=actor_id,
@@ -91,74 +88,48 @@ class TurnSystem(Processor):
         return True
 
     def on_action_finished(self):
-        """标记当前行动完毕，推进到下一个行动者。
-
-        由 BattleSession 在执行完成后调用。
-        """
+        """行动完毕结算：弹出行动者，其 time_cost 从全队扣除，再以新 AV 压回。"""
         if self.current_actor_id is None:
             return
 
-        # 发布回合结束事件
         self.event_stream.publish_turn_ended_event(
             tick=self.current_tick,
             entity_id=self.current_actor_id,
         )
 
-        # 弹出当前行动者
-        actor_id, _ = self.action_queue.pop_next()
+        actor_id, time_cost = self.action_queue.pop_next()
         assert actor_id == self.current_actor_id, "队列与当前行动者不同步"
 
-        # 获取当前行动者的速度，重新计算行动值
+        if time_cost > self.EPSILON:
+            self.action_queue.subtract_all(time_cost)
+
         spd = esper.try_component(actor_id, SpeedComponent)
         if spd:
-            new_action_value = 10000.0 / spd.value
-            self.action_queue.push(actor_id, new_action_value)
+            self.action_queue.push(actor_id, spd.action_value)
 
-        # 获取下一个行动者的值，对全队进行归一化
-        next_entry = self.action_queue.peek_next()
-        if next_entry is not None:
-            _, min_action_value = next_entry
-            if min_action_value > self.EPSILON:
-                self.action_queue.subtract_all(min_action_value)
-
-        # 推进到下一行动者
+        self._normalize_queue()
         self._advance_to_next_actor()
 
-    def on_speed_changed(
-        self, entity_id: int, old_speed: float, new_speed: float
-    ):
-        """处理速度变更事件，重新计算该实体的行动值。
+    def on_speed_changed(self, entity_id: int, old_speed: float, new_speed: float):
+        """处理速度变更：重新计算该实体的行动值并重新插入。
 
-        由其他系统通过事件或直接调用触发。
-        """
-        # 由于我们使用了 mark_invalid 的延迟删除机制，
-        # 我们可以简单地重新计算并重新插入
-        # (实际上这需要一个更复杂的机制来追踪队列中的项)
-        # MVP 版本中先不实现此功能，留作扩展
-        pass
-
-    def on_character_knocked_down(self, entity_id: int):
-        """处理角色倒下事件，将其从行动队列中移除。
-
-        由 HealthSystem 通过事件触发。
-        """
-        # 使用 mark_invalid 标记为无效，实际删除在 pop_next/peek_next 时完成
-        self.action_queue.mark_invalid(entity_id)
-
-    def on_character_knocked_down_restored(self, entity_id: int):
-        """处理角色恢复事件，将其重新加入行动队列。
-
-        由 HealingSystem 通过事件触发。
+        当固定速度加成变化时调用（如获得/失去速度buff）。
         """
         spd = esper.try_component(entity_id, SpeedComponent)
         if spd:
-            action_value = 10000.0 / spd.value
-            self.action_queue.push(entity_id, action_value)
+            new_av = spd.action_value
+            self.action_queue.reinsert(entity_id, new_av)
+
+    def on_character_knocked_down(self, entity_id: int):
+        self.action_queue.mark_invalid(entity_id)
+
+    def on_character_knocked_down_restored(self, entity_id: int):
+        spd = esper.try_component(entity_id, SpeedComponent)
+        if spd:
+            self.action_queue.reinsert(entity_id, spd.action_value)
 
     def get_current_actor(self) -> Optional[int]:
-        """获取当前行动者 ID。"""
         return self.current_actor_id
 
     def set_current_tick(self, tick: int):
-        """设置当前逻辑帧号，用于事件发布。"""
         self.current_tick = tick

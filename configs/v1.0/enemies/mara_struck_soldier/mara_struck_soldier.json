@@ -1,28 +1,37 @@
 {
   "id": 40000000,
   "name": "mara_struck_soldier",
-  "base_hp": 1000.0,
-  "base_atk": 500.0,
-  "base_def": 500.0,
-  "base_spd": 100.0,
+  "base_hp": 16518.0,
+  "base_atk": 552.0,
+  "base_def": 1000.0,
+  "base_spd": 99.6,
   "base_weakness": [
     "physical"
   ],
   "toughness": 60,
+  "effect_hit_rate": 0.24,
+  "effect_res": 0.20,
   "skills": [
     {
       "id": 41000000,
       "name": "mara_struck_soldier_skill",
-      "description": "TODO: fill skill description",
+      "description": "对指定敌方单体造成物理属性伤害。",
       "target_type": "single_target",
       "script": "skills/mara_struck_soldier_skill"
+    },
+    {
+      "id": 41000001,
+      "name": "callous_tailwind",
+      "description": "对指定敌方单体造成风属性伤害，并有基础概率使目标陷入风化状态。",
+      "target_type": "single_target",
+      "script": "skills/callous_tailwind"
     }
   ],
   "passives": [
     {
       "id": 42000000,
       "name": "mara_struck_soldier_passive",
-      "description": "TODO: fill passive description",
+      "description": "魔阴武弁被击败后，会立即复活并恢复全部生命值，该效果每场战斗仅可触发一次。",
       "script": "passives/mara_struck_soldier_passive"
     }
   ]

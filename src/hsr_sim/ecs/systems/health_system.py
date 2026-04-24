@@ -4,13 +4,14 @@ import esper
 from esper import Processor
 from eventure import Event
 
-from src.hsr_sim.ecs.components import (
+from hsr_sim.ecs.components import (
     HealthComponent,
     CharacterStatusComponent,
 )
-from src.hsr_sim.events.models import GameEvent
-from src.hsr_sim.events.types import EventType
-from src.hsr_sim.models.character_status import CharacterStatus
+from hsr_sim.events.models import GameEvent
+from hsr_sim.events.types import EventType
+from hsr_sim.hooks.hook_points import HookPoint
+from hsr_sim.models.character_status import CharacterStatus
 
 
 class HealthSystem(Processor):
@@ -23,9 +24,10 @@ class HealthSystem(Processor):
     4. 从 KNOCKED_DOWN 恢复时，设状态为 ALIVE，发布 CHARACTER_KNOCKED_DOWN_RESTORED 事件
     """
 
-    def __init__(self, event_stream):
+    def __init__(self, event_stream, hook_registry=None):
         super().__init__()
         self.event_stream = event_stream
+        self.hook_registry = hook_registry
 
     def process(self):
         """系统在这里暂无操作。HP 变化由事件驱动。"""
@@ -109,22 +111,38 @@ class HealthSystem(Processor):
             self._set_alive(entity_id)
 
     def _set_knocked_down(self, entity_id: int, source_id: int | None = None):
-        """设置角色为倒下状态。"""
+        """设置角色为倒下状态。
+
+        先触发 BEFORE_CHARACTER_KNOCKED_DOWN hook，允许外部逻辑
+        （如敌人复活被动）拦截并阻止击倒事件。
+        """
         status = esper.try_component(entity_id, CharacterStatusComponent)
-        if status and status.status != CharacterStatus.KNOCKED_DOWN:
-            status.status = CharacterStatus.KNOCKED_DOWN
+        if not status or status.status == CharacterStatus.KNOCKED_DOWN:
+            return
 
-            data = {"entity_id": entity_id}
-            if source_id is not None:
-                data["source_id"] = source_id
-
-            self.event_stream.publish(
-                GameEvent(
-                    tick=self.event_stream.event_log.current_tick,
-                    type=EventType.CHARACTER_KNOCKED_DOWN,
-                    data=data,
-                ),
+        if self.hook_registry is not None:
+            hook_result = self.hook_registry.trigger(
+                HookPoint.BEFORE_CHARACTER_KNOCKED_DOWN,
+                None,
+                entity_id=entity_id,
+                source_id=source_id,
             )
+            if hook_result.stop:
+                return
+
+        status.status = CharacterStatus.KNOCKED_DOWN
+
+        data = {"entity_id": entity_id}
+        if source_id is not None:
+            data["source_id"] = source_id
+
+        self.event_stream.publish(
+            GameEvent(
+                tick=self.event_stream.event_log.current_tick,
+                type=EventType.CHARACTER_KNOCKED_DOWN,
+                data=data,
+            ),
+        )
 
     def _set_alive(self, entity_id: int):
         """设置角色为存活状态。"""

@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from src.hsr_sim.models.character_status import CharacterStatus
+from hsr_sim.models.character_status import CharacterStatus
 
 
 class CharacterStatusComponent(BaseModel):

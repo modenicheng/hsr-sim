@@ -7,8 +7,8 @@ from hsr_sim.services import config_loader
 from hsr_sim.skills.script_loader import SkillContext as LoaderSkillContext
 from hsr_sim.skills.script_loader import SkillScriptLoader
 
-from src.hsr_sim.ecs.world import ECSWorld
-from src.hsr_sim.ecs.systems import (
+from hsr_sim.ecs.world import ECSWorld
+from hsr_sim.ecs.systems import (
     TurnSystem,
     DamageSystem,
     HealingSystem,
@@ -16,13 +16,13 @@ from src.hsr_sim.ecs.systems import (
     EnergySystem,
     BuffSystem,
 )
-from src.hsr_sim.ecs.components import (
+from hsr_sim.ecs.components import (
     BuffContainerComponent,
     CharacterStatusComponent,
     CharacterIdentityComponent,
 )
-from src.hsr_sim.models.character_status import CharacterStatus
-from src.hsr_sim.models.battle_state import BattleState, ActionInput
+from hsr_sim.models.character_status import CharacterStatus
+from hsr_sim.models.battle_state import BattleState, ActionInput
 
 
 class BattleSession:
@@ -59,7 +59,7 @@ class BattleSession:
             self.world.hook_registry,
             lambda: self.current_tick,
         )
-        self.health_system = HealthSystem(self.world.event_stream)
+        self.health_system = HealthSystem(self.world.event_stream, self.world.hook_registry)
         self.energy_system = EnergySystem(self.world.event_stream)
         self.buff_system = BuffSystem(
             self.world.event_stream, self.world.hook_registry

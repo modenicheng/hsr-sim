@@ -25,7 +25,18 @@ class DefenseComponent(BaseModel):
 
 
 class SpeedComponent(BaseModel):
-    value: float = Field(gt=0)
+    base_speed: float = Field(gt=0)
+    speed_bonus: float = Field(default=0.0)
+    speed_fix: float = Field(default=0.0)
+
+    @property
+    def final_speed(self) -> float:
+        return self.base_speed * (1 + self.speed_bonus) + self.speed_fix
+
+    @property
+    def action_value(self) -> float:
+        TRACK_LENGTH = 10000.0
+        return TRACK_LENGTH / self.final_speed
 
 
 class ActionValueComponent(BaseModel):
@@ -42,3 +53,8 @@ class CritRateComponent(BaseModel):
 
 class CritDamageComponent(BaseModel):
     value: float = Field(ge=0)
+
+
+class SkillPointComponent(BaseModel):
+    current: int = Field(ge=0)
+    max_value: int = Field(gt=0)

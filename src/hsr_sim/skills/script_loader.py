@@ -195,6 +195,34 @@ class SkillScriptLoader:
         )
         return cls(context)
 
+    def load_passive(
+        self,
+        *,
+        version: str,
+        enemy_name: str,
+        script: str,
+        context: SkillContext,
+        expected_base_class: type[Any] | None = BaseSkill,
+    ) -> Any:
+        script_name = _normalize_script_name(script)
+        module_path = self._build_enemy_module_path(
+            version=version,
+            enemy_name=enemy_name,
+            script_name=script_name,
+        )
+        error_context = {
+            "version": version,
+            "enemy_name": enemy_name,
+            "script": script_name,
+            "module": module_path,
+        }
+        cls = self.dynamic_loader.load_class(
+            module_path,
+            expected_base_class=expected_base_class,
+            context=error_context,
+        )
+        return cls(context)
+
     @staticmethod
     def _build_module_path(
         *, version: str, char_name: str, script_name: str
@@ -205,6 +233,17 @@ class SkillScriptLoader:
         else:
             script_module = f"skills.{script_name}"
         return f"configs.{version_token}.characters.{char_name}.{script_module}"
+
+    @staticmethod
+    def _build_enemy_module_path(
+        *, version: str, enemy_name: str, script_name: str
+    ) -> str:
+        version_token = _normalize_version_token(version)
+        if "/" in script_name:
+            script_module = script_name.replace("/", ".")
+        else:
+            script_module = f"passives.{script_name}"
+        return f"configs.{version_token}.enemies.{enemy_name}.{script_module}"
 
 
 @dataclass(slots=True)

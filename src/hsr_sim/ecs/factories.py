@@ -37,7 +37,7 @@ def create_character_from_config(char_name: str, version: str) -> int:
     )
     esper.add_component(entity, AttackComponent(value=char_config.base_atk))
     esper.add_component(entity, DefenseComponent(value=char_config.base_def))
-    esper.add_component(entity, SpeedComponent(value=char_config.base_spd))
+    esper.add_component(entity, SpeedComponent(base_speed=char_config.base_spd))
 
     # 根据角色配置的能量类型挂载能量组件
     if char_config.energy.energy_type == "standard":

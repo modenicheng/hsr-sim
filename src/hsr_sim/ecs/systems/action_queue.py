@@ -24,48 +24,37 @@ class ActionQueue:
         heapq.heappush(self._heap, ActionEntry(action_value, entity_id))
 
     def pop_next(self) -> tuple[int, float]:
-        """弹出行动值最小的实体。
-
-        Returns:
-            (entity_id, action_value) 元组
-
-        Raises:
-            IndexError: 队列为空
-        """
-        while self._heap:
-            entry = heapq.heappop(self._heap)
-            if entry.valid:
-                return entry.entity_id, entry.action_value
-        raise IndexError("Action queue is empty")
+        self._clean_invalid()
+        if not self._heap:
+            raise IndexError("Action queue is empty")
+        entry = heapq.heappop(self._heap)
+        return entry.entity_id, entry.action_value
 
     def peek_next(self) -> tuple[int, float] | None:
-        """查看行动值最小的实体，不删除。
-
-        Returns:
-            (entity_id, action_value) 元组，或 None 如果队列为空
-        """
-        while self._heap:
-            entry = self._heap[0]
-            if entry.valid:
-                return entry.entity_id, entry.action_value
-            heapq.heappop(self._heap)
-        return None
+        self._clean_invalid()
+        if not self._heap:
+            return None
+        return self._heap[0].entity_id, self._heap[0].action_value
 
     def mark_invalid(self, entity_id: int) -> None:
-        """标记实体为无效（延迟删除机制）。
+        for entry in self._heap:
+            if entry.entity_id == entity_id:
+                entry.valid = False
 
-        用于倒下角色或销毁的召唤物，避免重建整个堆。
-        """
-        # 这是一个标记操作，实际删除通过 pop_next 或 peek_next 的清理完成
-        pass
+    def reinsert(self, entity_id: int, new_action_value: float) -> None:
+        self.mark_invalid(entity_id)
+        self.push(entity_id, new_action_value)
+
+    def _clean_invalid(self) -> None:
+        self._heap = [e for e in self._heap if e.valid]
 
     def is_empty(self) -> bool:
-        """检查队列是否为空。"""
-        return not self._heap or all(not entry.valid for entry in self._heap)
+        self._clean_invalid()
+        return not self._heap
 
     def size(self) -> int:
-        """返回有效条目数量。"""
-        return sum(1 for entry in self._heap if entry.valid)
+        self._clean_invalid()
+        return len(self._heap)
 
     def clear(self) -> None:
         """清空队列。"""
@@ -78,3 +67,10 @@ class ActionQueue:
         """
         for entry in self._heap:
             entry.action_value -= amount
+
+    def sorted_entries(self) -> list[tuple[int, float]]:
+        self._clean_invalid()
+        return sorted(
+            [(e.entity_id, e.action_value) for e in self._heap],
+            key=lambda x: x[1],
+        )

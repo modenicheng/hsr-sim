@@ -1,5 +1,5 @@
 # src/hsr_sim/__main__.py
-from src.hsr_sim.ui.app import HSRSimApp
+from hsr_sim.ui.app import HSRSimApp
 
 
 def main():

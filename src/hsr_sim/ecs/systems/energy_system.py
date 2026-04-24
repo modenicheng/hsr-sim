@@ -4,11 +4,11 @@ from esper import Processor
 import esper
 from eventure import Event
 
-from src.hsr_sim.ecs.components import (
+from hsr_sim.ecs.components import (
     StandardEnergyComponent,
 )
-from src.hsr_sim.events.models import GameEvent
-from src.hsr_sim.events.types import EventType
+from hsr_sim.events.models import GameEvent
+from hsr_sim.events.types import EventType
 
 
 class EnergySystem(Processor):
@@ -23,6 +23,7 @@ class EnergySystem(Processor):
     def __init__(self, event_stream):
         super().__init__()
         self.event_stream = event_stream
+        self.auto_recover_on_turn = True
 
     def process(self):
         """系统在这里暂无操作。能量变化由事件驱动。"""
@@ -62,11 +63,12 @@ class EnergySystem(Processor):
 
     def on_turn_started(self, event: Event | GameEvent):
         """处理回合开始事件，恢复能量。"""
-        # MVP 版本中，回合开始时给所有存活角色恢复一定能量
+        if not self.auto_recover_on_turn:
+            return
         for ent, energy in esper.get_component(StandardEnergyComponent):
             self._recover_energy(
                 ent, energy.max_energy * 0.25
-            )  # 回合开始恢复 25%
+            )
 
     def on_damage_dealt(self, event: Event | GameEvent):
         """处理伤害事件，受击角色恢复能量。"""

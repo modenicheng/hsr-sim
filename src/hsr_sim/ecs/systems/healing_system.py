@@ -3,10 +3,10 @@
 import esper
 from esper import Processor
 
-from src.hsr_sim.ecs.components import AttackComponent
-from src.hsr_sim.events.models import GameEvent
-from src.hsr_sim.events.types import EventType
-from src.hsr_sim.hooks.hook_points import HookPoint
+from hsr_sim.ecs.components import AttackComponent
+from hsr_sim.events.models import GameEvent
+from hsr_sim.events.types import EventType
+from hsr_sim.hooks.hook_points import HookPoint
 
 
 class HealingSystem(Processor):
