@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 class UserLightCone(Base):
     __tablename__ = "user_light_cones"
-    __table_args__ = (Index("idx_light_cones_config_id", "config_id"), )
+    __table_args__ = (Index("idx_light_cones_config_id", "config_id"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     config_id: Mapped[int]

@@ -1,4 +1,5 @@
 """能量系统：处理能量扣除和恢复。"""
+
 from esper import Processor
 import esper
 from eventure import Event
@@ -63,7 +64,9 @@ class EnergySystem(Processor):
         """处理回合开始事件，恢复能量。"""
         # MVP 版本中，回合开始时给所有存活角色恢复一定能量
         for ent, energy in esper.get_component(StandardEnergyComponent):
-            self._recover_energy(ent, energy.max_energy * 0.25)  # 回合开始恢复 25%
+            self._recover_energy(
+                ent, energy.max_energy * 0.25
+            )  # 回合开始恢复 25%
 
     def on_damage_dealt(self, event: Event | GameEvent):
         """处理伤害事件，受击角色恢复能量。"""
@@ -87,20 +90,13 @@ class EnergySystem(Processor):
         energy = esper.try_component(entity_id, StandardEnergyComponent)
         if not energy:
             return
-        
+
         energy.energy = max(0, energy.energy - amount)
 
     def _recover_energy(self, entity_id: int, amount: float):
-        """恢复能量。"""
-        energy = esper.try_component(entity_id, StandardEnergyComponent)
-        if not energy:
-            return
-        
-        old_energy = energy.energy
-        energy.energy = min(energy.max_energy, energy.energy + amount)
-        
-        # 如果能量值变化，发布事件
-        if energy.energy != old_energy:
+        """恢复能量（实例方法，发布事件）。"""
+        old_energy = self.recover_energy(entity_id, amount)
+        if old_energy >= 0:
             self.event_stream.publish(
                 GameEvent(
                     tick=self.event_stream.event_log.current_tick,
@@ -108,7 +104,22 @@ class EnergySystem(Processor):
                     data={
                         "entity_id": entity_id,
                         "old_energy": old_energy,
-                        "new_energy": energy.energy,
+                        "new_energy": (
+                            esper.try_component(
+                                entity_id, StandardEnergyComponent
+                            ).energy
+                        ),
                     },
                 )
             )
+
+    @staticmethod
+    def recover_energy(entity_id: int, amount: float) -> float:
+        """静态方法：为实体恢复能量，由脚本直接调用。返回旧能量值（-1 表示失败）。"""
+        energy = esper.try_component(entity_id, StandardEnergyComponent)
+        if not energy:
+            return -1.0
+
+        old_energy = energy.energy
+        energy.energy = min(energy.max_energy, energy.energy + amount)
+        return old_energy

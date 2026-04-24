@@ -25,7 +25,6 @@ CONFIGS_DIR/
 
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-import re
 import shutil
 
 from hsr_sim.core.config import CONFIGS_DIR
@@ -76,8 +75,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "character_names",
         nargs="+",
-        help=
-        "One or more character names (English letters and underscores only)",
+        help="One or more character names (English letters and underscores only)",
     )
     parser.add_argument(
         "--version",
@@ -88,8 +86,7 @@ def parse_args() -> Namespace:
         "-f",
         "--force",
         action="store_true",
-        help=
-        "Force overwrite existing character directory in the same version.",
+        help="Force overwrite existing character directory in the same version.",
     )
 
     args = parser.parse_args()
@@ -148,9 +145,9 @@ def _make_empty_script_template(module_stem: str, title: str) -> str:
     )
 
 
-def _allocate_ids(version: str,
-                  id_range: tuple[int, int],
-                  count: int = 1) -> list[int]:
+def _allocate_ids(
+    version: str, id_range: tuple[int, int], count: int = 1
+) -> list[int]:
     return allocate_ids(
         configs_dir=CONFIGS_DIR,
         version=version,
@@ -171,11 +168,13 @@ def run_create_character(
             shutil.rmtree(char_dir)
         else:
             available_versions = sorted(
-                [p.name for p in CONFIGS_DIR.iterdir() if p.is_dir()])
+                [p.name for p in CONFIGS_DIR.iterdir() if p.is_dir()]
+            )
             version_hint = (
                 f"Available versions: {', '.join(available_versions)}"
-                if available_versions else
-                "No available version directories detected.")
+                if available_versions
+                else "No available version directories detected."
+            )
             raise FileExistsError(
                 "Same character already exists in the same version.\n"
                 f"Character: {character_name}\n"
@@ -192,11 +191,11 @@ def run_create_character(
     bonus_ability_dir = char_dir / "bonus_ability"
 
     for folder in [
-            skills_dir,
-            eidolons_dir,
-            talent_dir,
-            technique_dir,
-            bonus_ability_dir,
+        skills_dir,
+        eidolons_dir,
+        talent_dir,
+        technique_dir,
+        bonus_ability_dir,
     ]:
         folder.mkdir(parents=True, exist_ok=True)
 
@@ -209,15 +208,16 @@ def run_create_character(
         technique_dir / f"{character_name}_technique.py",
         bonus_ability_dir / f"{character_name}_bonus_ability_1.py",
     ]
-    planned_files.extend([
-        eidolons_dir / f"{character_name}_eidolon_{i}.py" for i in range(1, 7)
-    ])
+    planned_files.extend(
+        [eidolons_dir / f"{character_name}_eidolon_{i}.py" for i in range(1, 7)]
+    )
 
     existing_files = [str(path) for path in planned_files if path.exists()]
     if existing_files:
         raise FileExistsError(
             "Target files already exist, aborting to avoid partial overwrite:\n"
-            + "\n".join(existing_files))
+            + "\n".join(existing_files)
+        )
 
     created_files: list[Path] = []
 
@@ -268,7 +268,8 @@ def run_create_character(
                 name=f"{character_name}_eidolon_{i}",
                 describe="TODO: fill eidolon describe",
                 script=f"eidolons/{character_name}_eidolon_{i}",
-            ))
+            )
+        )
 
     character = CharacterConfig(
         id=character_id,
@@ -303,7 +304,8 @@ def run_create_character(
                 name=f"{character_name}_bonus_ability_{i}",
                 description="TODO: fill bonus ability description",
                 script=f"bonus_ability/{character_name}_bonus_ability_{i}",
-            ) for i in range(1, 4)
+            )
+            for i in range(1, 4)
         ],
         stat_bonus={StatType.ATK_PERCENT: 0.0},
         energy=EnergyConfig(energy_type="standard", max_energy=120),

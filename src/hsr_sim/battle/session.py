@@ -1,4 +1,5 @@
 """战斗会话：统一管理战斗生命周期、ECS 系统和状态机。"""
+
 from typing import Optional
 
 import esper
@@ -60,8 +61,9 @@ class BattleSession:
         )
         self.health_system = HealthSystem(self.world.event_stream)
         self.energy_system = EnergySystem(self.world.event_stream)
-        self.buff_system = BuffSystem(self.world.event_stream,
-                                      self.world.hook_registry)
+        self.buff_system = BuffSystem(
+            self.world.event_stream, self.world.hook_registry
+        )
 
         # 系统注册顺序很重要
         self.world.systems = [
@@ -111,8 +113,10 @@ class BattleSession:
         if self.state in (BattleState.IDLE, BattleState.PREPARING):
             self.state = BattleState.TURN_START
 
-        while self.state not in (BattleState.FINISHED,
-                                 BattleState.WAITING_ACTION):
+        while self.state not in (
+            BattleState.FINISHED,
+            BattleState.WAITING_ACTION,
+        ):
             self.current_tick += 1
             self.turn_system.set_current_tick(self.current_tick)
 
@@ -209,7 +213,9 @@ class BattleSession:
             resolved_name = script_result.get("skill_name")
             if isinstance(resolved_name, str) and resolved_name.strip():
                 skill_name_for_event = resolved_name
-            if self._apply_script_effect(actor_id, valid_targets, script_result):
+            if self._apply_script_effect(
+                actor_id, valid_targets, script_result
+            ):
                 self.world.event_stream.publish_skill_executed_event(
                     tick=self.current_tick,
                     skill_name=skill_name_for_event,
@@ -248,7 +254,9 @@ class BattleSession:
         )
         return True
 
-    def _execute_skill_script(self, actor_id: int, action_input: ActionInput) -> dict | None:
+    def _execute_skill_script(
+        self, actor_id: int, action_input: ActionInput
+    ) -> dict | None:
         """按 skill_id 解析并执行技能脚本。"""
         params = action_input.params or {}
         skill_id_raw = params.get("skill_id")
@@ -264,7 +272,9 @@ class BattleSession:
             return None
 
         version = identity.version or self.config_version
-        payload = config_loader.get_character_by_id(identity.config_id, version=version)
+        payload = config_loader.get_character_by_id(
+            identity.config_id, version=version
+        )
         if not payload:
             return None
 
@@ -290,7 +300,9 @@ class BattleSession:
                 char_name=char_config.name,
                 script=skill_config.script,
                 context=context,
-                skill_type=getattr(skill_config.type, "value", str(skill_config.type)),
+                skill_type=getattr(
+                    skill_config.type, "value", str(skill_config.type)
+                ),
             )
             self._skill_instance_cache[cache_key] = skill_obj
 
@@ -317,12 +329,18 @@ class BattleSession:
     @staticmethod
     def _find_skill_config_by_id(char_config, skill_id: int):
         """在角色主动技能中按 id 查找技能配置。"""
-        for cfg in (char_config.basic_atk, char_config.skill, char_config.ultimate):
+        for cfg in (
+            char_config.basic_atk,
+            char_config.skill,
+            char_config.ultimate,
+        ):
             if cfg.id == skill_id:
                 return cfg
         return None
 
-    def _apply_script_effect(self, actor_id: int, target_ids: list[int], script_result: dict) -> bool:
+    def _apply_script_effect(
+        self, actor_id: int, target_ids: list[int], script_result: dict
+    ) -> bool:
         """将脚本返回效果应用到系统。"""
         effect = str(script_result.get("effect", "")).lower()
 
@@ -363,14 +381,22 @@ class BattleSession:
             1
             for entity_id in self._team_ids
             if esper.entity_exists(entity_id)
-            and (status := esper.try_component(entity_id, CharacterStatusComponent))
+            and (
+                status := esper.try_component(
+                    entity_id, CharacterStatusComponent
+                )
+            )
             and status.status == CharacterStatus.ALIVE
         )
         alive_enemy = sum(
             1
             for entity_id in self._enemy_ids
             if esper.entity_exists(entity_id)
-            and (status := esper.try_component(entity_id, CharacterStatusComponent))
+            and (
+                status := esper.try_component(
+                    entity_id, CharacterStatusComponent
+                )
+            )
             and status.status == CharacterStatus.ALIVE
         )
 

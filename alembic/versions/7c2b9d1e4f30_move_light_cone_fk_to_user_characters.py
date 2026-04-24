@@ -22,7 +22,9 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     with op.batch_alter_table("user_characters", recreate="always") as batch_op:
-        batch_op.add_column(sa.Column("equipped_light_cone_id", sa.Integer(), nullable=True))
+        batch_op.add_column(
+            sa.Column("equipped_light_cone_id", sa.Integer(), nullable=True)
+        )
         batch_op.create_foreign_key(
             "fk_user_characters_equipped_light_cone_id",
             "user_light_cones",
@@ -31,7 +33,8 @@ def upgrade() -> None:
             ondelete="SET NULL",
         )
         batch_op.create_unique_constraint(
-            "uq_user_characters_equipped_light_cone_id", ["equipped_light_cone_id"]
+            "uq_user_characters_equipped_light_cone_id",
+            ["equipped_light_cone_id"],
         )
 
     op.execute(
@@ -52,14 +55,20 @@ def upgrade() -> None:
         )
     )
 
-    with op.batch_alter_table("user_light_cones", recreate="always") as batch_op:
+    with op.batch_alter_table(
+        "user_light_cones", recreate="always"
+    ) as batch_op:
         batch_op.drop_column("equipped_by")
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    with op.batch_alter_table("user_light_cones", recreate="always") as batch_op:
-        batch_op.add_column(sa.Column("equipped_by", sa.Integer(), nullable=True))
+    with op.batch_alter_table(
+        "user_light_cones", recreate="always"
+    ) as batch_op:
+        batch_op.add_column(
+            sa.Column("equipped_by", sa.Integer(), nullable=True)
+        )
         batch_op.create_foreign_key(
             "fk_user_light_cones_equipped_by",
             "user_characters",
@@ -67,7 +76,9 @@ def downgrade() -> None:
             ["id"],
             ondelete="SET NULL",
         )
-        batch_op.create_unique_constraint("uq_user_light_cones_equipped_by", ["equipped_by"])
+        batch_op.create_unique_constraint(
+            "uq_user_light_cones_equipped_by", ["equipped_by"]
+        )
 
     op.execute(
         sa.text(

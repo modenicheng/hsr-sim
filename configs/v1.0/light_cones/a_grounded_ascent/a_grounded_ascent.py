@@ -10,5 +10,3 @@ class AGroundedAscent(BaseSkill):
         """TODO: implement light cone behavior."""
         _ = args, kwargs
         return None
-
-

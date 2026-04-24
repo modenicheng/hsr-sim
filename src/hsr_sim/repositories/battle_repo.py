@@ -4,7 +4,6 @@ from .base import BaseRepository
 
 
 class BattleRepository(BaseRepository[Battle]):
-
     def __init__(self, db):
         super().__init__(Battle, db)
 
@@ -38,7 +37,6 @@ class BattleRepository(BaseRepository[Battle]):
 
 
 class BattleRecordRepository(BaseRepository[BattleRecord]):
-
     def __init__(self, db):
         super().__init__(BattleRecord, db)
 

@@ -10,5 +10,3 @@ class SeeleTalent(BaseSkill):
         """TODO: implement behavior."""
         _ = args, kwargs
         return None
-
-

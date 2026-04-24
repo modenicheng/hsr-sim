@@ -3,6 +3,7 @@ from enum import Enum
 
 class HookPoint(str, Enum):
     """钩子点"""
+
     BEFORE_DAMAGE_CALCULATION = "before_damage_calculation"  # 伤害计算前
     AFTER_DAMAGE_CALCULATION = "after_damage_calculation"  # 伤害计算后
     BEFORE_SKILL_EXECUTION = "before_skill_execution"  # 技能执行前
@@ -19,3 +20,6 @@ class HookPoint(str, Enum):
     ON_BUFF_EXPIRE = "on_buff_expire"  # Buff失效
     ON_BUFF_STACK_CHANGE = "on_buff_stack_change"  # Buff层数变化
     ON_ENERGY_CHANGE = "on_energy_change"  # 能量变化
+    BEFORE_CRIT_DETERMINATION = (
+        "before_crit_determination"  # 暴击判定前，可修改暴击率
+    )

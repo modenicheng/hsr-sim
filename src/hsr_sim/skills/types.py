@@ -1,4 +1,5 @@
 """技能类型枚举。"""
+
 from enum import Enum
 
 

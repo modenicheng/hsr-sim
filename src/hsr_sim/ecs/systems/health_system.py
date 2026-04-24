@@ -1,4 +1,5 @@
 """血量系统：处理 HP 变化、倒下判定和复活恢复。"""
+
 import esper
 from esper import Processor
 from eventure import Event
@@ -50,11 +51,12 @@ class HealthSystem(Processor):
         data = self._event_data(event)
         target_id = data.get("target_id")
         amount = data.get("amount", 0)
+        source_id = data.get("source_id")
 
         if target_id is None or amount <= 0:
             return
 
-        self._apply_damage(target_id, amount)
+        self._apply_damage(target_id, amount, source_id=source_id)
 
     def on_healing_done(self, event: Event):
         """处理治疗事件，恢复 HP。"""
@@ -73,7 +75,9 @@ class HealthSystem(Processor):
             return event.data
         return dict(getattr(event, "data", {}) or {})
 
-    def _apply_damage(self, entity_id: int, damage: float):
+    def _apply_damage(
+        self, entity_id: int, damage: float, source_id: int | None = None
+    ):
         """应用伤害，扣除 HP。"""
         health = esper.try_component(entity_id, HealthComponent)
         if not health:
@@ -83,7 +87,7 @@ class HealthSystem(Processor):
 
         # 检查是否倒下
         if health.value <= 0:
-            self._set_knocked_down(entity_id)
+            self._set_knocked_down(entity_id, source_id=source_id)
 
     def _apply_healing(self, entity_id: int, healing: float):
         """应用治疗，恢复 HP。"""
@@ -97,19 +101,29 @@ class HealthSystem(Processor):
         health.value = min(health.max_value, health.value + healing)
 
         # 如果从倒下状态恢复，设为 ALIVE
-        if status and status.status == CharacterStatus.KNOCKED_DOWN and health.value > 0:
+        if (
+            status
+            and status.status == CharacterStatus.KNOCKED_DOWN
+            and health.value > 0
+        ):
             self._set_alive(entity_id)
 
-    def _set_knocked_down(self, entity_id: int):
+    def _set_knocked_down(self, entity_id: int, source_id: int | None = None):
         """设置角色为倒下状态。"""
         status = esper.try_component(entity_id, CharacterStatusComponent)
         if status and status.status != CharacterStatus.KNOCKED_DOWN:
             status.status = CharacterStatus.KNOCKED_DOWN
 
-            # 发布 CHARACTER_KNOCKED_DOWN 事件
-            self.event_stream.publish_character_knocked_down_event(
-                tick=self.event_stream.event_log.current_tick,
-                entity_id=entity_id,
+            data = {"entity_id": entity_id}
+            if source_id is not None:
+                data["source_id"] = source_id
+
+            self.event_stream.publish(
+                GameEvent(
+                    tick=self.event_stream.event_log.current_tick,
+                    type=EventType.CHARACTER_KNOCKED_DOWN,
+                    data=data,
+                ),
             )
 
     def _set_alive(self, entity_id: int):

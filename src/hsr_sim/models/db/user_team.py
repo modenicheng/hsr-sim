@@ -30,9 +30,9 @@ user_team_characters = Table(
 class UserTeam(Base):
     __tablename__ = "user_teams"
 
-    id: Mapped[int] = mapped_column(Integer,
-                                    primary_key=True,
-                                    autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True
+    )
     team_name: Mapped[str] = mapped_column(String(100))
     characters: Mapped[list["UserCharacter"]] = relationship(
         "UserCharacter",

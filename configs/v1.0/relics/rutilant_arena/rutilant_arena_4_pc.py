@@ -10,5 +10,3 @@ class RutilantArena4Pc(BaseSkill):
         """TODO: implement set bonus behavior."""
         _ = args, kwargs
         return None
-
-

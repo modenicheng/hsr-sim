@@ -91,18 +91,24 @@ def test_dynamic_class_loader_imports_class_script_from_file_path(
     assert cls.__name__ == "TempCharSkill"
 
 
-def test_character_skill_loader_aggregates_by_type(tmp_path: Path, monkeypatch) -> None:
+def test_character_skill_loader_aggregates_by_type(
+    tmp_path: Path, monkeypatch
+) -> None:
     configs_root = tmp_path / "configs"
     monkeypatch.setattr(create_character, "CONFIGS_DIR", configs_root)
     create_character.run_create_character("alpha", "v1.0")
 
-    config_loader_module = importlib.import_module("hsr_sim.services.config_loader")
+    config_loader_module = importlib.import_module(
+        "hsr_sim.services.config_loader"
+    )
     monkeypatch.setattr(config_loader_module, "CONFIGS_DIR", configs_root)
     monkeypatch.setattr("hsr_sim.skills.script_loader.PROJECT_ROOT", tmp_path)
 
     config_loader = config_loader_module.ConfigLoader()
     script_loader = SkillScriptLoader()
-    loader = CharacterSkillLoader(config_loader=config_loader, script_loader=script_loader)
+    loader = CharacterSkillLoader(
+        config_loader=config_loader, script_loader=script_loader
+    )
 
     character_payload = config_loader.get_character("alpha", version="v1.0")
     assert character_payload is not None

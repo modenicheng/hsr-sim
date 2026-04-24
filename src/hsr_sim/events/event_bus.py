@@ -90,10 +90,12 @@ class GameEventBus:
                 order=self._next_order,
                 callback=handler,
                 handle=handle,
-            ))
+            )
+        )
         self._next_order += 1
         self._subscriptions[event_name].sort(
-            key=lambda item: (-item.priority, item.order))
+            key=lambda item: (-item.priority, item.order)
+        )
         return handle
 
     def unsubscribe(self, handle: SubscriptionHandle) -> bool:
@@ -266,6 +268,42 @@ class GameEventBus:
             parent_event=parent_event,
         )
 
+    def publish_turn_started_event(
+        self,
+        *,
+        tick: int,
+        entity_id: int,
+        timestamp: float | None = None,
+        parent_event: Event | None = None,
+    ) -> Event:
+        return self.publish(
+            GameEvent(
+                tick=tick,
+                type=EventType.TURN_STARTED,
+                data={"entity_id": entity_id},
+                timestamp=timestamp,
+            ),
+            parent_event=parent_event,
+        )
+
+    def publish_turn_ended_event(
+        self,
+        *,
+        tick: int,
+        entity_id: int,
+        timestamp: float | None = None,
+        parent_event: Event | None = None,
+    ) -> Event:
+        return self.publish(
+            GameEvent(
+                tick=tick,
+                type=EventType.TURN_ENDED,
+                data={"entity_id": entity_id},
+                timestamp=timestamp,
+            ),
+            parent_event=parent_event,
+        )
+
     def publish_turn_skipped_event(
         self,
         *,
@@ -279,10 +317,7 @@ class GameEventBus:
             GameEvent(
                 tick=tick,
                 type=EventType.TURN_SKIPPED,
-                data={
-                    "entity_id": entity_id,
-                    "reason": reason
-                },
+                data={"entity_id": entity_id, "reason": reason},
                 timestamp=timestamp,
             ),
             parent_event=parent_event,

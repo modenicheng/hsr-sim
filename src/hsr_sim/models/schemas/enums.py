@@ -3,6 +3,7 @@ from enum import Enum
 
 class Element(str, Enum):
     """角色/敌人的属性"""
+
     PHYSICAL = "physical"  # 物理
     FIRE = "fire"  # 火
     ICE = "ice"  # 冰
@@ -14,6 +15,7 @@ class Element(str, Enum):
 
 class Path(str, Enum):
     """命途"""
+
     DESTRUCTION = "destruction"  # 毁灭
     HUNT = "hunt"  # 巡猎
     ERUDITION = "erudition"  # 智识
@@ -27,6 +29,7 @@ class Path(str, Enum):
 
 class RelicSlot(str, Enum):
     """遗器部位"""
+
     HEAD = "head"  # 头部
     HANDS = "hands"  # 手部
     TORSO = "torso"  # 躯干
@@ -37,6 +40,7 @@ class RelicSlot(str, Enum):
 
 class StatType(str, Enum):
     """属性类型（用于角色属性、遗器主副词条、Buff等）"""
+
     HP = "hp"  # 生命值
     HP_PERCENT = "hp_percent"  # 生命值百分比
     ATK = "atk"  # 攻击
@@ -74,6 +78,7 @@ class StatType(str, Enum):
 
 class SkillType(str, Enum):
     """技能类型"""
+
     BASIC = "basic"  # 普通攻击
     SKILL = "skill"  # 战技
     ULTIMATE = "ultimate"  # 大招
@@ -86,6 +91,7 @@ class SkillType(str, Enum):
 
 class DMGType(str, Enum):
     """伤害类型"""
+
     PHYSICAL_DMG = "physical_dmg"  # 物理伤害
     FIRE_DMG = "fire_dmg"  # 火元素伤害
     ICE_DMG = "ice_dmg"  # 冰元素伤害
@@ -99,6 +105,7 @@ class DMGType(str, Enum):
 
 class SkillTargetType(str, Enum):
     """技能目标类型"""
+
     SINGLE_TARGET = "single_target"  # 单体
     BLAST = "blast"  # 扩散
     AOE = "aoe"  # 群攻
@@ -106,6 +113,7 @@ class SkillTargetType(str, Enum):
 
 class TechniqueType(str, Enum):
     """秘技类型"""
+
     IMPAIR = "impair"  # 削弱
     SUPPORT = "support"  # 支援
     RESTORE = "restore"  # 回复

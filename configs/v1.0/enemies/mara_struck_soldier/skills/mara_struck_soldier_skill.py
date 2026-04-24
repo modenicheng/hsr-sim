@@ -10,5 +10,3 @@ class MaraStruckSoldierSkill(BaseSkill):
         """TODO: implement enemy skill behavior."""
         _ = args, kwargs
         return None
-
-

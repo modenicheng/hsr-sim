@@ -15,346 +15,270 @@ RarityGrowthMap = dict[int, RelicStatGrowth]
 
 MAIN_STAT_GROWTH_MAP: dict[StatType, RarityGrowthMap] = {
     StatType.SPEED: {
-        5:
-        RelicStatGrowth(base_value=4.032,
-                        growth_per_level=1.4,
-                        max_value=25.032),
-        4:
-        RelicStatGrowth(base_value=3.2256,
-                        growth_per_level=1.1,
-                        max_value=16.4256),
-        3:
-        RelicStatGrowth(base_value=2.4192,
-                        growth_per_level=1.0,
-                        max_value=11.4192),
-        2:
-        RelicStatGrowth(base_value=1.6128,
-                        growth_per_level=1.0,
-                        max_value=7.6128),
+        5: RelicStatGrowth(
+            base_value=4.032, growth_per_level=1.4, max_value=25.032
+        ),
+        4: RelicStatGrowth(
+            base_value=3.2256, growth_per_level=1.1, max_value=16.4256
+        ),
+        3: RelicStatGrowth(
+            base_value=2.4192, growth_per_level=1.0, max_value=11.4192
+        ),
+        2: RelicStatGrowth(
+            base_value=1.6128, growth_per_level=1.0, max_value=7.6128
+        ),
     },
     StatType.HP: {
-        5:
-        RelicStatGrowth(base_value=112.896,
-                        growth_per_level=39.5136,
-                        max_value=705.6),
-        4:
-        RelicStatGrowth(base_value=90.3168,
-                        growth_per_level=31.61088,
-                        max_value=469.6474),
-        3:
-        RelicStatGrowth(base_value=67.7376,
-                        growth_per_level=23.70816,
-                        max_value=281.111),
-        2:
-        RelicStatGrowth(base_value=45.1584,
-                        growth_per_level=15.80544,
-                        max_value=139.991),
+        5: RelicStatGrowth(
+            base_value=112.896, growth_per_level=39.5136, max_value=705.6
+        ),
+        4: RelicStatGrowth(
+            base_value=90.3168, growth_per_level=31.61088, max_value=469.6474
+        ),
+        3: RelicStatGrowth(
+            base_value=67.7376, growth_per_level=23.70816, max_value=281.111
+        ),
+        2: RelicStatGrowth(
+            base_value=45.1584, growth_per_level=15.80544, max_value=139.991
+        ),
     },
     StatType.ATK: {
-        5:
-        RelicStatGrowth(base_value=56.448,
-                        growth_per_level=19.7568,
-                        max_value=352.8),
-        4:
-        RelicStatGrowth(base_value=45.1584,
-                        growth_per_level=15.80544,
-                        max_value=234.8237),
-        3:
-        RelicStatGrowth(base_value=33.8688,
-                        growth_per_level=11.85408,
-                        max_value=140.5555),
-        2:
-        RelicStatGrowth(base_value=22.5792,
-                        growth_per_level=7.90272,
-                        max_value=69.9955),
+        5: RelicStatGrowth(
+            base_value=56.448, growth_per_level=19.7568, max_value=352.8
+        ),
+        4: RelicStatGrowth(
+            base_value=45.1584, growth_per_level=15.80544, max_value=234.8237
+        ),
+        3: RelicStatGrowth(
+            base_value=33.8688, growth_per_level=11.85408, max_value=140.5555
+        ),
+        2: RelicStatGrowth(
+            base_value=22.5792, growth_per_level=7.90272, max_value=69.9955
+        ),
     },
     StatType.HP_PERCENT: {
-        5:
-        RelicStatGrowth(base_value=0.06912,
-                        growth_per_level=0.024192,
-                        max_value=0.432),
-        4:
-        RelicStatGrowth(base_value=0.055296,
-                        growth_per_level=0.019354,
-                        max_value=0.287544),
-        3:
-        RelicStatGrowth(base_value=0.041472,
-                        growth_per_level=0.014515,
-                        max_value=0.172107),
-        2:
-        RelicStatGrowth(base_value=0.027648,
-                        growth_per_level=0.009677,
-                        max_value=0.08571),
+        5: RelicStatGrowth(
+            base_value=0.06912, growth_per_level=0.024192, max_value=0.432
+        ),
+        4: RelicStatGrowth(
+            base_value=0.055296, growth_per_level=0.019354, max_value=0.287544
+        ),
+        3: RelicStatGrowth(
+            base_value=0.041472, growth_per_level=0.014515, max_value=0.172107
+        ),
+        2: RelicStatGrowth(
+            base_value=0.027648, growth_per_level=0.009677, max_value=0.08571
+        ),
     },
     StatType.ATK_PERCENT: {
-        5:
-        RelicStatGrowth(base_value=0.06912,
-                        growth_per_level=0.024192,
-                        max_value=0.432),
-        4:
-        RelicStatGrowth(base_value=0.055296,
-                        growth_per_level=0.019354,
-                        max_value=0.287544),
-        3:
-        RelicStatGrowth(base_value=0.041472,
-                        growth_per_level=0.014515,
-                        max_value=0.172107),
-        2:
-        RelicStatGrowth(base_value=0.027648,
-                        growth_per_level=0.009677,
-                        max_value=0.08571),
+        5: RelicStatGrowth(
+            base_value=0.06912, growth_per_level=0.024192, max_value=0.432
+        ),
+        4: RelicStatGrowth(
+            base_value=0.055296, growth_per_level=0.019354, max_value=0.287544
+        ),
+        3: RelicStatGrowth(
+            base_value=0.041472, growth_per_level=0.014515, max_value=0.172107
+        ),
+        2: RelicStatGrowth(
+            base_value=0.027648, growth_per_level=0.009677, max_value=0.08571
+        ),
     },
     StatType.DEF_PERCENT: {
-        5:
-        RelicStatGrowth(base_value=0.0864,
-                        growth_per_level=0.03024,
-                        max_value=0.54),
-        4:
-        RelicStatGrowth(base_value=0.06912,
-                        growth_per_level=0.024192,
-                        max_value=0.359424),
-        3:
-        RelicStatGrowth(base_value=0.05184,
-                        growth_per_level=0.018144,
-                        max_value=0.215136),
-        2:
-        RelicStatGrowth(base_value=0.03456,
-                        growth_per_level=0.012096,
-                        max_value=0.107136),
+        5: RelicStatGrowth(
+            base_value=0.0864, growth_per_level=0.03024, max_value=0.54
+        ),
+        4: RelicStatGrowth(
+            base_value=0.06912, growth_per_level=0.024192, max_value=0.359424
+        ),
+        3: RelicStatGrowth(
+            base_value=0.05184, growth_per_level=0.018144, max_value=0.215136
+        ),
+        2: RelicStatGrowth(
+            base_value=0.03456, growth_per_level=0.012096, max_value=0.107136
+        ),
     },
     StatType.BREAK_EFFECT: {
-        5:
-        RelicStatGrowth(base_value=0.10368,
-                        growth_per_level=0.036277,
-                        max_value=0.648),
-        4:
-        RelicStatGrowth(base_value=0.082944,
-                        growth_per_level=0.02903,
-                        max_value=0.431304),
-        3:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.258165),
-        2:
-        RelicStatGrowth(base_value=0.041472,
-                        growth_per_level=0.014515,
-                        max_value=0.128562),
+        5: RelicStatGrowth(
+            base_value=0.10368, growth_per_level=0.036277, max_value=0.648
+        ),
+        4: RelicStatGrowth(
+            base_value=0.082944, growth_per_level=0.02903, max_value=0.431304
+        ),
+        3: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.258165
+        ),
+        2: RelicStatGrowth(
+            base_value=0.041472, growth_per_level=0.014515, max_value=0.128562
+        ),
     },
     StatType.EFFECT_HIT_RATE: {
-        5:
-        RelicStatGrowth(base_value=0.06912,
-                        growth_per_level=0.024192,
-                        max_value=0.432),
-        4:
-        RelicStatGrowth(base_value=0.055296,
-                        growth_per_level=0.019354,
-                        max_value=0.287544),
-        3:
-        RelicStatGrowth(base_value=0.041472,
-                        growth_per_level=0.014515,
-                        max_value=0.172107),
-        2:
-        RelicStatGrowth(base_value=0.027648,
-                        growth_per_level=0.009677,
-                        max_value=0.08571),
+        5: RelicStatGrowth(
+            base_value=0.06912, growth_per_level=0.024192, max_value=0.432
+        ),
+        4: RelicStatGrowth(
+            base_value=0.055296, growth_per_level=0.019354, max_value=0.287544
+        ),
+        3: RelicStatGrowth(
+            base_value=0.041472, growth_per_level=0.014515, max_value=0.172107
+        ),
+        2: RelicStatGrowth(
+            base_value=0.027648, growth_per_level=0.009677, max_value=0.08571
+        ),
     },
     StatType.ENERGY_REGEN: {
-        5:
-        RelicStatGrowth(base_value=0.031104,
-                        growth_per_level=0.010886,
-                        max_value=0.194394),
-        4:
-        RelicStatGrowth(base_value=0.024883,
-                        growth_per_level=0.008709,
-                        max_value=0.129391),
-        3:
-        RelicStatGrowth(base_value=0.018662,
-                        growth_per_level=0.006532,
-                        max_value=0.07745),
-        2:
-        RelicStatGrowth(base_value=0.012442,
-                        growth_per_level=0.004355,
-                        max_value=0.038572),
+        5: RelicStatGrowth(
+            base_value=0.031104, growth_per_level=0.010886, max_value=0.194394
+        ),
+        4: RelicStatGrowth(
+            base_value=0.024883, growth_per_level=0.008709, max_value=0.129391
+        ),
+        3: RelicStatGrowth(
+            base_value=0.018662, growth_per_level=0.006532, max_value=0.07745
+        ),
+        2: RelicStatGrowth(
+            base_value=0.012442, growth_per_level=0.004355, max_value=0.038572
+        ),
     },
     StatType.OUTGOING_HEALING_BOOST: {
-        5:
-        RelicStatGrowth(base_value=0.055296,
-                        growth_per_level=0.019354,
-                        max_value=0.345606),
-        4:
-        RelicStatGrowth(base_value=0.044237,
-                        growth_per_level=0.015483,
-                        max_value=0.230033),
-        3:
-        RelicStatGrowth(base_value=0.033178,
-                        growth_per_level=0.011612,
-                        max_value=0.137686),
-        2:
-        RelicStatGrowth(base_value=0.022118,
-                        growth_per_level=0.007741,
-                        max_value=0.068564),
+        5: RelicStatGrowth(
+            base_value=0.055296, growth_per_level=0.019354, max_value=0.345606
+        ),
+        4: RelicStatGrowth(
+            base_value=0.044237, growth_per_level=0.015483, max_value=0.230033
+        ),
+        3: RelicStatGrowth(
+            base_value=0.033178, growth_per_level=0.011612, max_value=0.137686
+        ),
+        2: RelicStatGrowth(
+            base_value=0.022118, growth_per_level=0.007741, max_value=0.068564
+        ),
     },
     StatType.PHYSICAL_DMG: {
-        5:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.388803),
-        4:
-        RelicStatGrowth(base_value=0.049766,
-                        growth_per_level=0.017418,
-                        max_value=0.258782),
-        3:
-        RelicStatGrowth(base_value=0.037325,
-                        growth_per_level=0.013064,
-                        max_value=0.154901),
-        2:
-        RelicStatGrowth(base_value=0.024883,
-                        growth_per_level=0.008709,
-                        max_value=0.077137),
+        5: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.388803
+        ),
+        4: RelicStatGrowth(
+            base_value=0.049766, growth_per_level=0.017418, max_value=0.258782
+        ),
+        3: RelicStatGrowth(
+            base_value=0.037325, growth_per_level=0.013064, max_value=0.154901
+        ),
+        2: RelicStatGrowth(
+            base_value=0.024883, growth_per_level=0.008709, max_value=0.077137
+        ),
     },
     StatType.FIRE_DMG: {
-        5:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.388803),
-        4:
-        RelicStatGrowth(base_value=0.049766,
-                        growth_per_level=0.017418,
-                        max_value=0.258782),
-        3:
-        RelicStatGrowth(base_value=0.037325,
-                        growth_per_level=0.013064,
-                        max_value=0.154901),
-        2:
-        RelicStatGrowth(base_value=0.024883,
-                        growth_per_level=0.008709,
-                        max_value=0.077137),
+        5: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.388803
+        ),
+        4: RelicStatGrowth(
+            base_value=0.049766, growth_per_level=0.017418, max_value=0.258782
+        ),
+        3: RelicStatGrowth(
+            base_value=0.037325, growth_per_level=0.013064, max_value=0.154901
+        ),
+        2: RelicStatGrowth(
+            base_value=0.024883, growth_per_level=0.008709, max_value=0.077137
+        ),
     },
     StatType.ICE_DMG: {
-        5:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.388803),
-        4:
-        RelicStatGrowth(base_value=0.049766,
-                        growth_per_level=0.017418,
-                        max_value=0.258782),
-        3:
-        RelicStatGrowth(base_value=0.037325,
-                        growth_per_level=0.013064,
-                        max_value=0.154901),
-        2:
-        RelicStatGrowth(base_value=0.024883,
-                        growth_per_level=0.008709,
-                        max_value=0.077137),
+        5: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.388803
+        ),
+        4: RelicStatGrowth(
+            base_value=0.049766, growth_per_level=0.017418, max_value=0.258782
+        ),
+        3: RelicStatGrowth(
+            base_value=0.037325, growth_per_level=0.013064, max_value=0.154901
+        ),
+        2: RelicStatGrowth(
+            base_value=0.024883, growth_per_level=0.008709, max_value=0.077137
+        ),
     },
     StatType.WIND_DMG: {
-        5:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.388803),
-        4:
-        RelicStatGrowth(base_value=0.049766,
-                        growth_per_level=0.017418,
-                        max_value=0.258782),
-        3:
-        RelicStatGrowth(base_value=0.037325,
-                        growth_per_level=0.013064,
-                        max_value=0.154901),
-        2:
-        RelicStatGrowth(base_value=0.024883,
-                        growth_per_level=0.008709,
-                        max_value=0.077137),
+        5: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.388803
+        ),
+        4: RelicStatGrowth(
+            base_value=0.049766, growth_per_level=0.017418, max_value=0.258782
+        ),
+        3: RelicStatGrowth(
+            base_value=0.037325, growth_per_level=0.013064, max_value=0.154901
+        ),
+        2: RelicStatGrowth(
+            base_value=0.024883, growth_per_level=0.008709, max_value=0.077137
+        ),
     },
     StatType.LIGHTNING_DMG: {
-        5:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.388803),
-        4:
-        RelicStatGrowth(base_value=0.049766,
-                        growth_per_level=0.017418,
-                        max_value=0.258782),
-        3:
-        RelicStatGrowth(base_value=0.037325,
-                        growth_per_level=0.013064,
-                        max_value=0.154901),
-        2:
-        RelicStatGrowth(base_value=0.024883,
-                        growth_per_level=0.008709,
-                        max_value=0.077137),
+        5: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.388803
+        ),
+        4: RelicStatGrowth(
+            base_value=0.049766, growth_per_level=0.017418, max_value=0.258782
+        ),
+        3: RelicStatGrowth(
+            base_value=0.037325, growth_per_level=0.013064, max_value=0.154901
+        ),
+        2: RelicStatGrowth(
+            base_value=0.024883, growth_per_level=0.008709, max_value=0.077137
+        ),
     },
     StatType.QUANTUM_DMG: {
-        5:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.388803),
-        4:
-        RelicStatGrowth(base_value=0.049766,
-                        growth_per_level=0.017418,
-                        max_value=0.258782),
-        3:
-        RelicStatGrowth(base_value=0.037325,
-                        growth_per_level=0.013064,
-                        max_value=0.154901),
-        2:
-        RelicStatGrowth(base_value=0.024883,
-                        growth_per_level=0.008709,
-                        max_value=0.077137),
+        5: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.388803
+        ),
+        4: RelicStatGrowth(
+            base_value=0.049766, growth_per_level=0.017418, max_value=0.258782
+        ),
+        3: RelicStatGrowth(
+            base_value=0.037325, growth_per_level=0.013064, max_value=0.154901
+        ),
+        2: RelicStatGrowth(
+            base_value=0.024883, growth_per_level=0.008709, max_value=0.077137
+        ),
     },
     StatType.IMAGINARY_DMG: {
-        5:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.388803),
-        4:
-        RelicStatGrowth(base_value=0.049766,
-                        growth_per_level=0.017418,
-                        max_value=0.258782),
-        3:
-        RelicStatGrowth(base_value=0.037325,
-                        growth_per_level=0.013064,
-                        max_value=0.154901),
-        2:
-        RelicStatGrowth(base_value=0.024883,
-                        growth_per_level=0.008709,
-                        max_value=0.077137),
+        5: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.388803
+        ),
+        4: RelicStatGrowth(
+            base_value=0.049766, growth_per_level=0.017418, max_value=0.258782
+        ),
+        3: RelicStatGrowth(
+            base_value=0.037325, growth_per_level=0.013064, max_value=0.154901
+        ),
+        2: RelicStatGrowth(
+            base_value=0.024883, growth_per_level=0.008709, max_value=0.077137
+        ),
     },
     StatType.CRIT_RATE: {
-        5:
-        RelicStatGrowth(base_value=0.05184,
-                        growth_per_level=0.018144,
-                        max_value=0.324),
-        4:
-        RelicStatGrowth(base_value=0.041472,
-                        growth_per_level=0.014515,
-                        max_value=0.215652),
-        3:
-        RelicStatGrowth(base_value=0.031104,
-                        growth_per_level=0.010886,
-                        max_value=0.129078),
-        2:
-        RelicStatGrowth(base_value=0.020736,
-                        growth_per_level=0.007258,
-                        max_value=0.064284),
+        5: RelicStatGrowth(
+            base_value=0.05184, growth_per_level=0.018144, max_value=0.324
+        ),
+        4: RelicStatGrowth(
+            base_value=0.041472, growth_per_level=0.014515, max_value=0.215652
+        ),
+        3: RelicStatGrowth(
+            base_value=0.031104, growth_per_level=0.010886, max_value=0.129078
+        ),
+        2: RelicStatGrowth(
+            base_value=0.020736, growth_per_level=0.007258, max_value=0.064284
+        ),
     },
     StatType.CRIT_DAMAGE: {
-        5:
-        RelicStatGrowth(base_value=0.10368,
-                        growth_per_level=0.036288,
-                        max_value=0.648),
-        4:
-        RelicStatGrowth(base_value=0.082944,
-                        growth_per_level=0.02903,
-                        max_value=0.431304),
-        3:
-        RelicStatGrowth(base_value=0.062208,
-                        growth_per_level=0.021773,
-                        max_value=0.258165),
-        2:
-        RelicStatGrowth(base_value=0.041472,
-                        growth_per_level=0.014515,
-                        max_value=0.128562),
+        5: RelicStatGrowth(
+            base_value=0.10368, growth_per_level=0.036288, max_value=0.648
+        ),
+        4: RelicStatGrowth(
+            base_value=0.082944, growth_per_level=0.02903, max_value=0.431304
+        ),
+        3: RelicStatGrowth(
+            base_value=0.062208, growth_per_level=0.021773, max_value=0.258165
+        ),
+        2: RelicStatGrowth(
+            base_value=0.041472, growth_per_level=0.014515, max_value=0.128562
+        ),
     },
 }
 
@@ -366,10 +290,14 @@ SLOT_STATS_MAP: dict[RelicSlot, list[tuple[StatType, RarityGrowthMap]]] = {
         (StatType.HP_PERCENT, MAIN_STAT_GROWTH_MAP[StatType.HP_PERCENT]),
         (StatType.ATK_PERCENT, MAIN_STAT_GROWTH_MAP[StatType.ATK_PERCENT]),
         (StatType.DEF_PERCENT, MAIN_STAT_GROWTH_MAP[StatType.DEF_PERCENT]),
-        (StatType.EFFECT_HIT_RATE,
-         MAIN_STAT_GROWTH_MAP[StatType.EFFECT_HIT_RATE]),
-        (StatType.OUTGOING_HEALING_BOOST,
-         MAIN_STAT_GROWTH_MAP[StatType.OUTGOING_HEALING_BOOST]),
+        (
+            StatType.EFFECT_HIT_RATE,
+            MAIN_STAT_GROWTH_MAP[StatType.EFFECT_HIT_RATE],
+        ),
+        (
+            StatType.OUTGOING_HEALING_BOOST,
+            MAIN_STAT_GROWTH_MAP[StatType.OUTGOING_HEALING_BOOST],
+        ),
         (StatType.CRIT_DAMAGE, MAIN_STAT_GROWTH_MAP[StatType.CRIT_DAMAGE]),
         (StatType.CRIT_RATE, MAIN_STAT_GROWTH_MAP[StatType.CRIT_RATE]),
     ],
@@ -481,12 +409,14 @@ SUBSTAT_WEIGHT_MAP: dict[StatType, int] = {
     StatType.BREAK_EFFECT: 8,
 }
 
+
 class RelicSetConfig(BaseModel):
     id: int
     name: str
     # 2件套效果和4件套效果至少有一个不为 None
-    passive_2_pc: PassiveSkillConfig # 2件套被动 必定有
+    passive_2_pc: PassiveSkillConfig  # 2件套被动 必定有
     passive_4_pc: PassiveSkillConfig | None = None  # 4件套被动
+
 
 class RelicConfig(BaseModel):
     id: int

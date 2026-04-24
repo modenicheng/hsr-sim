@@ -1,4 +1,5 @@
 """角色状态枚举定义。"""
+
 from enum import Enum
 
 

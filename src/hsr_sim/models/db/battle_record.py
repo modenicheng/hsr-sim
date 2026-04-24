@@ -11,7 +11,9 @@ class Battle(Base):
     __tablename__ = "battles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    time: Mapped[int] = mapped_column(Integer, nullable=False)  # 战斗发生的时间戳
+    time: Mapped[int] = mapped_column(
+        Integer, nullable=False
+    )  # 战斗发生的时间戳
 
     records: Mapped[list["BattleRecord"]] = relationship(
         "BattleRecord",
@@ -43,7 +45,8 @@ class BattleRecord(Base):
         nullable=False,
     )
     record_data: Mapped[dict[str, Any]] = mapped_column(
-        JSONText, nullable=False)  # 存储战斗记录的JSON数据
+        JSONText, nullable=False
+    )  # 存储战斗记录的JSON数据
 
     battle: Mapped[Battle | None] = relationship(
         "Battle",

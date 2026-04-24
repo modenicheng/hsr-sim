@@ -15,4 +15,6 @@ class LightConeConfig(BaseModel):
     # 留在这里共以后写动态schema参考（
     # superimposition: int = Field(default=1, ge=1, le=5)  # 叠影
     story: str  # 背景故事
-    passive_skill: PassiveSkillConfig  # 被动技能脚本，描述被动技能效果和数值计算逻辑
+    passive_skill: (
+        PassiveSkillConfig  # 被动技能脚本，描述被动技能效果和数值计算逻辑
+    )

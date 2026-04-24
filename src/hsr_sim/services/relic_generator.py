@@ -3,12 +3,15 @@ from collections.abc import Sequence
 
 from hsr_sim.models.db.user_relics import UserRelic
 from hsr_sim.models.schemas.enums import RelicSlot, StatType
-from hsr_sim.models.schemas.relics import SLOT_STATS_MAP, SUBSIDARY_STATS, SUBSTAT_WEIGHT_MAP
+from hsr_sim.models.schemas.relics import (
+    SLOT_STATS_MAP,
+    SUBSIDARY_STATS,
+    SUBSTAT_WEIGHT_MAP,
+)
 from hsr_sim.repositories.relic_repo import RelicRepository
 
 
 class RelicGenerator:
-
     def __init__(
         self,
         relic_repo: RelicRepository,
@@ -89,7 +92,9 @@ class RelicGenerator:
 
         selected_stats = self._weighted_sample_without_replacement(
             items=available_stats,
-            weights=[SUBSTAT_WEIGHT_MAP.get(stat, 1) for stat in available_stats],
+            weights=[
+                SUBSTAT_WEIGHT_MAP.get(stat, 1) for stat in available_stats
+            ],
             k=count,
         )
 

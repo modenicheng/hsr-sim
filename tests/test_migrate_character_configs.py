@@ -78,12 +78,16 @@ def test_deep_fill_missing_does_not_override_existing_values():
     assert merged["energy"]["max_energy"] == 8
 
 
-def test_migrate_character_configs_fills_missing_energy_and_preserves_custom_data(tmp_path, monkeypatch):
+def test_migrate_character_configs_fills_missing_energy_and_preserves_custom_data(
+    tmp_path, monkeypatch
+):
     configs_root = tmp_path / "configs"
     char_json = configs_root / "v1.0" / "characters" / "seele" / "seele.json"
     char_json.parent.mkdir(parents=True, exist_ok=True)
     payload = _character_payload_without_energy()
-    char_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    char_json.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     monkeypatch.setattr(migrate_module, "CONFIGS_DIR", configs_root)
     stats = migrate_module.migrate_character_configs(version="v1.0", write=True)

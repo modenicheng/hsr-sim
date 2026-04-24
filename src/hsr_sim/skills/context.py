@@ -8,7 +8,6 @@ from hsr_sim.events.types import EventType
 
 
 class SkillContext:
-
     def __init__(
         self,
         world,
@@ -37,7 +36,8 @@ class SkillContext:
         event = GameEvent(
             tick=self._tick_supplier(),
             type=event_type
-            if isinstance(event_type, EventType) else EventType(event_type),
+            if isinstance(event_type, EventType)
+            else EventType(event_type),
             data=data,
         )
         return self._event_bus.publish(event)

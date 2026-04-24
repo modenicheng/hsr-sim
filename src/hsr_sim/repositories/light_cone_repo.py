@@ -7,7 +7,6 @@ from .base import BaseRepository
 
 
 class UserLightConeRepository(BaseRepository[UserLightCone]):
-
     def __init__(self, db):
         super().__init__(UserLightCone, db)
 
@@ -22,8 +21,10 @@ class UserLightConeRepository(BaseRepository[UserLightCone]):
             self.db.query(UserLightCone)
             .join(
                 UserCharacter,
-                and_(UserCharacter.equipped_light_cone_id == UserLightCone.id,
-                     UserCharacter.id == character_id),
+                and_(
+                    UserCharacter.equipped_light_cone_id == UserLightCone.id,
+                    UserCharacter.id == character_id,
+                ),
             )
             .one_or_none()
         )

@@ -3,7 +3,6 @@ from hsr_sim.repositories.relic_repo import RelicRepository
 
 
 class RelicService:
-
     def __init__(self, relic_repo: RelicRepository):
         self.relic_repo = relic_repo
 

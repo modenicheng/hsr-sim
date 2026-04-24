@@ -1,6 +1,9 @@
 from pydantic import ValidationError
 
-from hsr_sim.ecs.components.buffs import ActiveBuffComponent, BuffContainerComponent
+from hsr_sim.ecs.components.buffs import (
+    ActiveBuffComponent,
+    BuffContainerComponent,
+)
 
 
 def test_active_buff_component_only_runtime_fields():

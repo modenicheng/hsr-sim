@@ -10,5 +10,3 @@ class SundayEidolon6(BaseSkill):
         """TODO: implement behavior."""
         _ = args, kwargs
         return None
-
-

@@ -1,9 +1,15 @@
 # src/hsr_sim/ecs/factories.py
 import esper
 from hsr_sim.services import config_loader
-from .components import (HealthComponent, AttackComponent, DefenseComponent,
-                         SpeedComponent, StandardEnergyComponent,
-                         SpecialEnergyComponent, CharacterIdentityComponent)
+from .components import (
+    HealthComponent,
+    AttackComponent,
+    DefenseComponent,
+    SpeedComponent,
+    StandardEnergyComponent,
+    SpecialEnergyComponent,
+    CharacterIdentityComponent,
+)
 
 
 def create_character_from_config(char_name: str, version: str) -> int:
@@ -25,7 +31,10 @@ def create_character_from_config(char_name: str, version: str) -> int:
     # 挂载基础战斗属性组件
     esper.add_component(
         entity,
-        HealthComponent(value=char_config.base_hp, max_value=char_config.base_hp))
+        HealthComponent(
+            value=char_config.base_hp, max_value=char_config.base_hp
+        ),
+    )
     esper.add_component(entity, AttackComponent(value=char_config.base_atk))
     esper.add_component(entity, DefenseComponent(value=char_config.base_def))
     esper.add_component(entity, SpeedComponent(value=char_config.base_spd))
@@ -34,23 +43,32 @@ def create_character_from_config(char_name: str, version: str) -> int:
     if char_config.energy.energy_type == "standard":
         esper.add_component(
             entity,
-            StandardEnergyComponent(energy=0,
-                                    max_energy=char_config.energy.max_energy))
+            StandardEnergyComponent(
+                energy=0, max_energy=char_config.energy.max_energy
+            ),
+        )
     else:
         esper.add_component(
             entity,
-            SpecialEnergyComponent(name=char_config.energy.energy_type,
-                                   energy=0,
-                                   max_energy=char_config.energy.max_energy))
+            SpecialEnergyComponent(
+                name=char_config.energy.energy_type,
+                energy=0,
+                max_energy=char_config.energy.max_energy,
+            ),
+        )
 
     # 挂载身份组件，记录其来源
     esper.add_component(
         entity,
-        CharacterIdentityComponent(config_id=char_config.id,
-                                   config_name=char_config.name,
-                                   version=version))
+        CharacterIdentityComponent(
+            config_id=char_config.id,
+            config_name=char_config.name,
+            version=version,
+        ),
+    )
 
     return entity
+
 
 def load_character_from_db(user_character):
     """根据数据库中的用户角色数据创建角色实体，返回实体ID.

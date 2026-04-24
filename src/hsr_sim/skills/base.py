@@ -17,7 +17,9 @@ class SkillContext:
     config_loader: ConfigLoader | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def trigger_hook(self, hook_point: str, initial_value: float, **kwargs) -> float:
+    def trigger_hook(
+        self, hook_point: str, initial_value: float, **kwargs
+    ) -> float:
         """触发 Hook 的便捷方法。"""
         if self.hook_chain is None:
             return initial_value
@@ -30,6 +32,7 @@ class SkillContext:
             return
         # 简化版：直接发布事件
         from src.hsr_sim.events.models import GameEvent
+
         event = GameEvent(
             tick=0,  # 由调用者决定
             type=(

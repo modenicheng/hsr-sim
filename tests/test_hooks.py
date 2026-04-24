@@ -20,10 +20,12 @@ def test_hook_chain_orders_by_priority_and_can_stop():
         calls.append(f"high:{value}")
         return HookResult(stop=True, value=value * 2)
 
-    registry.register(HookPoint.BEFORE_DAMAGE_CALCULATION, low_priority,
-                      priority=10)
-    registry.register(HookPoint.BEFORE_DAMAGE_CALCULATION, high_priority,
-                      priority=100)
+    registry.register(
+        HookPoint.BEFORE_DAMAGE_CALCULATION, low_priority, priority=10
+    )
+    registry.register(
+        HookPoint.BEFORE_DAMAGE_CALCULATION, high_priority, priority=100
+    )
 
     result = registry.trigger(HookPoint.BEFORE_DAMAGE_CALCULATION, 5)
 

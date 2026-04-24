@@ -7,7 +7,6 @@ from hsr_sim.hooks import HookRegistry
 
 
 class ECSWorld:
-
     def __init__(self, config_version: str):
         self.config_version = config_version
         self.world_name = config_version

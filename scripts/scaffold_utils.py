@@ -53,9 +53,9 @@ def make_loadable_script_template(
         f'"""{title}."""\n\n'
         "from hsr_sim.skills.script_loader import BaseSkill\n\n\n"
         f"class {class_name}(BaseSkill):\n"
-        f"    \"\"\"{class_doc}\"\"\"\n\n"
+        f'    """{class_doc}"""\n\n'
         "    def execute(self, *args, **kwargs):\n"
-        f"        \"\"\"{execute_todo}\"\"\"\n"
+        f'        """{execute_todo}"""\n'
         "        _ = args, kwargs\n"
         "        return None\n\n\n"
     )
@@ -99,7 +99,9 @@ def allocate_ids(
     lower, upper = id_range
     existing = [
         value
-        for value in collect_version_ids(configs_dir=configs_dir, version=version)
+        for value in collect_version_ids(
+            configs_dir=configs_dir, version=version
+        )
         if lower <= value <= upper
     ]
     start = max(existing, default=lower - 1) + 1

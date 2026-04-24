@@ -10,7 +10,6 @@ ModelType = TypeVar("ModelType", bound=Base)
 
 
 class BaseRepository(Generic[ModelType]):
-
     def __init__(self, model: type[ModelType], db: Session):
         self.model = model
         self.db = db
@@ -59,6 +58,8 @@ class BaseRepository(Generic[ModelType]):
         if obj:
             self.db.delete(obj)
         else:
-            logger.warning(f"{self.model.__name__} with id {id} not found for deletion.")
+            logger.warning(
+                f"{self.model.__name__} with id {id} not found for deletion."
+            )
 
     # 不提供 update，由调用方直接修改从 get 返回的托管对象

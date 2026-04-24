@@ -48,7 +48,9 @@ BLOCK_ELEMENTS = {chr(codepoint) for codepoint in range(0x2580, 0x25A0)}
 
 def _require_block_element(ch: str, arg_name: str) -> None:
     if ch not in BLOCK_ELEMENTS:
-        raise ValueError(f"{arg_name} 必须是方块元素字符（U+2580..U+259F），当前为: {ch!r}")
+        raise ValueError(
+            f"{arg_name} 必须是方块元素字符（U+2580..U+259F），当前为: {ch!r}"
+        )
 
 
 def _require_single_char(ch: str, arg_name: str) -> None:
@@ -98,10 +100,12 @@ def render_block_text(
     canvas_width = text_width + shadow_offset_x
     canvas_height = text_height + shadow_offset_y
 
-    glyph_mask = [[False for _ in range(canvas_width)]
-                  for _ in range(canvas_height)]
-    shadow_mask = [[False for _ in range(canvas_width)]
-                   for _ in range(canvas_height)]
+    glyph_mask = [
+        [False for _ in range(canvas_width)] for _ in range(canvas_height)
+    ]
+    shadow_mask = [
+        [False for _ in range(canvas_width)] for _ in range(canvas_height)
+    ]
 
     for y, row in enumerate(base_rows):
         for x, on in enumerate(row):

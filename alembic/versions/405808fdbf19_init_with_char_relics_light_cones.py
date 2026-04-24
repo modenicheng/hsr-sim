@@ -1,18 +1,16 @@
 """init with char, relics & light cones.
 
 Revision ID: 405808fdbf19
-Revises: 
+Revises:
 Create Date: 2026-04-14 19:39:33.452963
 
 """
-from typing import Sequence, Union
 
-from alembic import op
-import sqlalchemy as sa
+from typing import Sequence, Union
 
 
 # revision identifiers, used by Alembic.
-revision: str = '405808fdbf19'
+revision: str = "405808fdbf19"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

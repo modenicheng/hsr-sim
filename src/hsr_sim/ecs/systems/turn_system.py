@@ -1,4 +1,5 @@
 """回合系统：HSR 行动值机制的核心实现。"""
+
 from typing import Optional
 
 import esper
@@ -37,9 +38,9 @@ class TurnSystem(Processor):
         if self._initialized:
             return
 
-        for ent, (spd,
-                  status) in esper.get_components(SpeedComponent,
-                                                  CharacterStatusComponent):
+        for ent, (spd, status) in esper.get_components(
+            SpeedComponent, CharacterStatusComponent
+        ):
             if status.status == CharacterStatus.ALIVE:
                 action_value = 10000.0 / spd.value
                 self.action_queue.push(ent, action_value)
@@ -76,6 +77,12 @@ class TurnSystem(Processor):
             )
             return self._advance_to_next_actor()  # 递归检查下一位
 
+        # 发布回合开始事件
+        self.event_stream.publish_turn_started_event(
+            tick=self.current_tick,
+            entity_id=actor_id,
+        )
+
         # 发布行动决策事件
         self.event_stream.publish_action_decision_needed_event(
             tick=self.current_tick,
@@ -90,6 +97,12 @@ class TurnSystem(Processor):
         """
         if self.current_actor_id is None:
             return
+
+        # 发布回合结束事件
+        self.event_stream.publish_turn_ended_event(
+            tick=self.current_tick,
+            entity_id=self.current_actor_id,
+        )
 
         # 弹出当前行动者
         actor_id, _ = self.action_queue.pop_next()
@@ -111,8 +124,9 @@ class TurnSystem(Processor):
         # 推进到下一行动者
         self._advance_to_next_actor()
 
-    def on_speed_changed(self, entity_id: int, old_speed: float,
-                         new_speed: float):
+    def on_speed_changed(
+        self, entity_id: int, old_speed: float, new_speed: float
+    ):
         """处理速度变更事件，重新计算该实体的行动值。
 
         由其他系统通过事件或直接调用触发。

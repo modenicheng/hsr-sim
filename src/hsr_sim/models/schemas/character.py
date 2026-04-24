@@ -4,6 +4,7 @@ from .eidolon import EidolonConfig
 from .passive import PassiveSkillConfig
 from .skill import SkillConfig
 
+
 class Memosprite(BaseModel):
     id: int
     name: str
@@ -14,9 +15,13 @@ class Memosprite(BaseModel):
     memosprite_talent_id: int  # 忆灵天赋 ID
     memosprite_skill_id: int  # 忆灵技 ID
 
+
 class EnergyConfig(BaseModel):
-    energy_type: str = Field(default="standard")  # 能量类型，如 "standard" 或特定的特殊能量类型
+    energy_type: str = Field(
+        default="standard"
+    )  # 能量类型，如 "standard" 或特定的特殊能量类型
     max_energy: int = Field(gt=0, default=120)  # 最大能量值
+
 
 class CharacterConfig(BaseModel):
     id: int

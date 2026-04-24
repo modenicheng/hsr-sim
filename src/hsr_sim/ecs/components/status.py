@@ -1,4 +1,5 @@
 """角色状态组件。"""
+
 from pydantic import BaseModel
 
 from src.hsr_sim.models.character_status import CharacterStatus

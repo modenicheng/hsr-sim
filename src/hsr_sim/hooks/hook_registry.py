@@ -21,11 +21,13 @@ class HookRegistry:
             self._chains[hook_point] = chain
         return chain
 
-    def register(self,
-                 hook_point: HookPoint,
-                 callback: Callable[..., Any],
-                 priority: int = 0,
-                 owner: str | None = None) -> HookHandle:
+    def register(
+        self,
+        hook_point: HookPoint,
+        callback: Callable[..., Any],
+        priority: int = 0,
+        owner: str | None = None,
+    ) -> HookHandle:
         return self._get_chain(hook_point).register(
             callback=callback,
             priority=priority,
@@ -54,12 +56,14 @@ class HookRegistry:
 
         return removed
 
-    def trigger(self,
-                hook_point: HookPoint,
-                current_value: Any = None,
-                /,
-                *args: Any,
-                **kwargs: Any) -> HookResult:
+    def trigger(
+        self,
+        hook_point: HookPoint,
+        current_value: Any = None,
+        /,
+        *args: Any,
+        **kwargs: Any,
+    ) -> HookResult:
         chain = self._chains.get(hook_point)
         if chain is None:
             return HookResult(value=current_value)

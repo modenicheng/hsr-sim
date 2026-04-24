@@ -48,8 +48,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "names",
         nargs="+",
-        help=
-        "One or more light cone names (English characters and underscores only)",
+        help="One or more light cone names (English characters and underscores only)",
     )
     parser.add_argument(
         "--version",
@@ -84,9 +83,9 @@ def _script_template(name: str) -> str:
     )
 
 
-def _allocate_ids(version: str,
-                  id_range: tuple[int, int],
-                  count: int = 1) -> list[int]:
+def _allocate_ids(
+    version: str, id_range: tuple[int, int], count: int = 1
+) -> list[int]:
     return allocate_ids(
         configs_dir=CONFIGS_DIR,
         version=version,
@@ -95,8 +94,9 @@ def _allocate_ids(version: str,
     )
 
 
-def _build_light_cone_payload(name: str, light_cone_id: int,
-                              passive_id: int) -> dict:
+def _build_light_cone_payload(
+    name: str, light_cone_id: int, passive_id: int
+) -> dict:
     light_cone = LightConeConfig(
         id=light_cone_id,
         name=name,
@@ -113,9 +113,7 @@ def _build_light_cone_payload(name: str, light_cone_id: int,
     return light_cone.model_dump(mode="json")
 
 
-def run_create_light_cone(name: str,
-                          version: str,
-                          force: bool = False) -> None:
+def run_create_light_cone(name: str, version: str, force: bool = False) -> None:
     cone_dir = CONFIGS_DIR / version / "light_cones" / name
 
     if cone_dir.exists():
@@ -138,8 +136,9 @@ def run_create_light_cone(name: str,
     json_path = cone_dir / f"{name}.json"
     py_path = cone_dir / f"{name}.py"
 
-    write_json(json_path,
-               _build_light_cone_payload(name, light_cone_id, passive_id))
+    write_json(
+        json_path, _build_light_cone_payload(name, light_cone_id, passive_id)
+    )
     write_text(py_path, _script_template(name))
 
     print(f"Created 2 files under: {cone_dir}")

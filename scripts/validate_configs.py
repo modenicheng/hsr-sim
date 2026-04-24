@@ -41,8 +41,7 @@ class ConfigValidator:
         """Scan and validate all configs in specified version or all versions."""
         self._scan_versions(version)
         if not self.versions:
-            console.print(
-                "[yellow]No valid version directories found[/yellow]")
+            console.print("[yellow]No valid version directories found[/yellow]")
             return
 
         for ver in self.versions:
@@ -58,7 +57,8 @@ class ConfigValidator:
 
         pattern = re.compile(r"^v(\d+)\.(\d+)$")
         versions = [
-            p.name for p in CONFIGS_DIR.iterdir()
+            p.name
+            for p in CONFIGS_DIR.iterdir()
             if p.is_dir() and pattern.match(p.name)
         ]
         self.versions = sorted(versions)
@@ -90,11 +90,19 @@ class ConfigValidator:
                 self._validate_json(version, "character", json_file)
 
             # Validate character-related scripts
-            for script_type in ["skills", "talent", "technique", "eidolons", "bonus_ability"]:
+            for script_type in [
+                "skills",
+                "talent",
+                "technique",
+                "eidolons",
+                "bonus_ability",
+            ]:
                 script_dir = char_dir / script_type
                 if script_dir.exists():
                     for py_file in script_dir.glob("*.py"):
-                        self._validate_python_script(version, "character", py_file)
+                        self._validate_python_script(
+                            version, "character", py_file
+                        )
 
             # Validate character-scoped buffs
             buffs_root = char_dir / "buffs"
@@ -105,7 +113,9 @@ class ConfigValidator:
                         if buff_json.exists():
                             self._validate_json(version, "buff", buff_json)
                         for py_file in buff_dir.glob("*.py"):
-                            self._validate_python_script(version, "buff", py_file)
+                            self._validate_python_script(
+                                version, "buff", py_file
+                            )
 
     def _validate_light_cones(self, version: str, lc_root: Path) -> None:
         """Validate light cone configs and scripts."""
@@ -179,8 +189,9 @@ class ConfigValidator:
                     for py_file in script_dir.glob("*.py"):
                         self._validate_python_script(version, "enemy", py_file)
 
-    def _validate_json(self, version: str, config_type: str,
-                       json_path: Path) -> None:
+    def _validate_json(
+        self, version: str, config_type: str, json_path: Path
+    ) -> None:
         """Validate JSON format and check for ID duplicates."""
         self.processed_files += 1
         try:
@@ -216,8 +227,9 @@ class ConfigValidator:
                 f"Unexpected error: {exc}",
             )
 
-    def _validate_python_script(self, version: str, config_type: str,
-                                py_path: Path) -> None:
+    def _validate_python_script(
+        self, version: str, config_type: str, py_path: Path
+    ) -> None:
         """Validate Python script format and compliance."""
         self.processed_files += 1
         try:
@@ -231,7 +243,10 @@ class ConfigValidator:
             ast.parse(content)
 
             # Check if it imports BaseSkill
-            if "from hsr_sim.skills.script_loader import BaseSkill" not in content:
+            if (
+                "from hsr_sim.skills.script_loader import BaseSkill"
+                not in content
+            ):
                 self._add_issue(
                     ISSUE_WARNING,
                     config_type,
@@ -283,15 +298,18 @@ class ConfigValidator:
                 f"Unexpected error: {exc}",
             )
 
-    def _add_issue(self, level: str, config_type: str, path: str,
-                   message: str) -> None:
+    def _add_issue(
+        self, level: str, config_type: str, path: str, message: str
+    ) -> None:
         """Record an issue."""
-        self.issues.append({
-            "level": level,
-            "type": config_type,
-            "path": path,
-            "message": message,
-        })
+        self.issues.append(
+            {
+                "level": level,
+                "type": config_type,
+                "path": path,
+                "message": message,
+            }
+        )
 
     def _check_duplicate_ids(self) -> None:
         """Check for duplicate IDs across all configs."""
@@ -309,8 +327,7 @@ class ConfigValidator:
         """Normalize version string to vX.X format."""
         matched = re.fullmatch(r"v?(\d+\.\d+)", version)
         if not matched:
-            raise ValueError(
-                "version format only supports x.x or vx.x")
+            raise ValueError("version format only supports x.x or vx.x")
         return f"v{matched.group(1)}"
 
     def report(self) -> None:
@@ -339,9 +356,11 @@ class ConfigValidator:
 
         # Errors table
         if errors:
-            error_table = Table(title="[red][bold]Errors[/bold][/red]",
-                                show_header=True,
-                                header_style="bold red")
+            error_table = Table(
+                title="[red][bold]Errors[/bold][/red]",
+                show_header=True,
+                header_style="bold red",
+            )
             error_table.add_column("Type", style="cyan")
             error_table.add_column("Path", style="magenta")
             error_table.add_column("Message", style="red")
@@ -357,9 +376,11 @@ class ConfigValidator:
 
         # Warnings table
         if warnings:
-            warning_table = Table(title="[yellow][bold]Warnings[/bold][/yellow]",
-                                  show_header=True,
-                                  header_style="bold yellow")
+            warning_table = Table(
+                title="[yellow][bold]Warnings[/bold][/yellow]",
+                show_header=True,
+                header_style="bold yellow",
+            )
             warning_table.add_column("Type", style="cyan")
             warning_table.add_column("Path", style="magenta")
             warning_table.add_column("Message", style="yellow")
@@ -377,8 +398,9 @@ class ConfigValidator:
         if errors:
             status = Text("❌ Validation failed", style="bold red")
         elif warnings:
-            status = Text("⚠️  Validation passed with warnings",
-                          style="bold yellow")
+            status = Text(
+                "⚠️  Validation passed with warnings", style="bold yellow"
+            )
         else:
             status = Text("✅ All validations passed", style="bold green")
 

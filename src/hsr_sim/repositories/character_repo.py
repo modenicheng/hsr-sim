@@ -5,7 +5,6 @@ from .base import BaseRepository
 
 
 class UserCharacterRepository(BaseRepository[UserCharacter]):
-
     def __init__(self, db):
         super().__init__(UserCharacter, db)
 

@@ -1,4 +1,3 @@
-import pytest
 from eventure import EventBus, EventLog
 
 from hsr_sim.events import bus, event_log

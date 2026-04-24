@@ -1,5 +1,4 @@
 """治疗系统：处理治疗计算和 Hook 干预。"""
-from typing import Optional
 
 import esper
 from esper import Processor
@@ -11,9 +10,8 @@ from src.hsr_sim.hooks.hook_points import HookPoint
 
 
 class HealingSystem(Processor):
-    """
-    治疗系统：只负责治疗计算流程与 Hook 干预。
-    
+    """治疗系统：只负责治疗计算流程与 Hook 干预。
+
     流程：
     1. Hook.BEFORE_HEALING_CALCULATION（传入原始治疗量）
     2. 治疗公式计算（基础治疗、治疗加成等）
@@ -38,12 +36,12 @@ class HealingSystem(Processor):
         base_healing: float,
     ) -> float:
         """计算并应用治疗。
-        
+
         Args:
             healer_id: 治疗者 ID
             target_id: 目标 ID
             base_healing: 基础治疗量
-            
+
         Returns:
             最终治疗量（经 Hook 修改后）
         """
@@ -54,15 +52,17 @@ class HealingSystem(Processor):
             healer_id=healer_id,
             target_id=target_id,
         )
-        
-        healing_after_hook_before = hook_result.value if hook_result.value is not None else base_healing
-        
+
+        healing_after_hook_before = (
+            hook_result.value if hook_result.value is not None else base_healing
+        )
+
         # 治疗公式计算
         final_healing = self._apply_healing_formula(
             healing_after_hook_before,
             healer_id,
         )
-        
+
         # 后置 Hook：AFTER_HEALING_CALCULATION
         hook_result = self.hook_chain.trigger(
             HookPoint.AFTER_HEALING_CALCULATION,
@@ -70,12 +70,16 @@ class HealingSystem(Processor):
             healer_id=healer_id,
             target_id=target_id,
         )
-        
-        final_healing = hook_result.value if hook_result.value is not None else final_healing
-        
+
+        final_healing = (
+            hook_result.value
+            if hook_result.value is not None
+            else final_healing
+        )
+
         # 确保治疗量不为负
         final_healing = max(0, final_healing)
-        
+
         # 发布治疗结果事件，由 HealthSystem 处理 HP 恢复
         self.event_stream.publish(
             GameEvent(
@@ -88,7 +92,7 @@ class HealingSystem(Processor):
                 },
             )
         )
-        
+
         return final_healing
 
     def _apply_healing_formula(
@@ -97,13 +101,13 @@ class HealingSystem(Processor):
         healer_id: int,
     ) -> float:
         """应用治疗公式。
-        
+
         简化版本：治疗量 = 基础治疗 × (1 + 治疗者攻击力修正)
         """
         healer_attack = esper.try_component(healer_id, AttackComponent)
         healing_multiplier = 1.0
         if healer_attack:
             healing_multiplier = 1.0 + (healer_attack.value - 100) / 100 * 0.05
-        
+
         healing = base_healing * healing_multiplier
         return healing

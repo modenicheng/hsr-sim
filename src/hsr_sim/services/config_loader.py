@@ -17,7 +17,6 @@ def _normalize_version_token(version: str) -> str:
 
 
 class ConfigLoader:
-
     def __init__(self):
         self._cache: dict[str, dict[str, dict[str, dict[str, Any]]]] = {
             "characters": {},
@@ -31,8 +30,12 @@ class ConfigLoader:
             "relics": {},
             "buffs": {},
         }
-        self._character_buff_cache: dict[int, dict[str, dict[str, dict[str, Any]]]] = {}
-        self._character_buff_id_cache: dict[int, dict[int, dict[str, dict[str, Any]]]] = {}
+        self._character_buff_cache: dict[
+            int, dict[str, dict[str, dict[str, Any]]]
+        ] = {}
+        self._character_buff_id_cache: dict[
+            int, dict[int, dict[str, dict[str, Any]]]
+        ] = {}
         self._versions: list[str] = []
         self._scan_versions()
         self._load_all()
@@ -64,8 +67,12 @@ class ConfigLoader:
         self._load_buffs(version, version_path / "buffs")
 
     def _build_module_path(self, version: str, path: Path) -> str:
-        relative_parts = list(path.with_suffix("").relative_to(CONFIGS_DIR / version).parts)
-        return ".".join(["configs", _normalize_version_token(version), *relative_parts])
+        relative_parts = list(
+            path.with_suffix("").relative_to(CONFIGS_DIR / version).parts
+        )
+        return ".".join(
+            ["configs", _normalize_version_token(version), *relative_parts]
+        )
 
     def _put_cache(
         self,
@@ -105,7 +112,8 @@ class ConfigLoader:
                 continue
 
             scripts_info = self._collect_character_scripts(
-                version, char_dir, char_name)
+                version, char_dir, char_name
+            )
 
             self._put_cache(
                 dataset="characters",
@@ -132,7 +140,9 @@ class ConfigLoader:
             char_config = char_payload.get("config")
             if not isinstance(char_config, CharacterConfig):
                 continue
-            self._load_buffs(version, char_dir / "buffs", character_id=char_config.id)
+            self._load_buffs(
+                version, char_dir / "buffs", character_id=char_config.id
+            )
 
     def _collect_character_scripts(
         self,
@@ -148,8 +158,9 @@ class ConfigLoader:
             scripts["skills"] = {}
             for skill_file in skills_dir.glob("*.py"):
                 skill_name = skill_file.stem
-                scripts["skills"][
-                    skill_name] = f"{base_package}.skills.{skill_name}"
+                scripts["skills"][skill_name] = (
+                    f"{base_package}.skills.{skill_name}"
+                )
 
         talent_dir = char_dir / "talent"
         if talent_dir.exists():
@@ -159,8 +170,9 @@ class ConfigLoader:
         tech_dir = char_dir / "technique"
         if tech_dir.exists():
             for tech_file in tech_dir.glob("*.py"):
-                scripts[
-                    "technique"] = f"{base_package}.technique.{tech_file.stem}"
+                scripts["technique"] = (
+                    f"{base_package}.technique.{tech_file.stem}"
+                )
 
         eidolon_dir = char_dir / "eidolons"
         if eidolon_dir.exists():
@@ -201,7 +213,9 @@ class ConfigLoader:
 
             script_module = None
             if py_file.exists():
-                script_module = f"configs.{version}.light_cones.{lc_name}.{lc_name}"
+                script_module = (
+                    f"configs.{version}.light_cones.{lc_name}.{lc_name}"
+                )
 
             self._put_cache(
                 dataset="light_cones",
@@ -275,7 +289,9 @@ class ConfigLoader:
             buff_name = json_file.stem
             scripts: dict[str, str] = {}
             for script_file in sorted(json_file.parent.glob("*.py")):
-                scripts[script_file.stem] = self._build_module_path(version, script_file)
+                scripts[script_file.stem] = self._build_module_path(
+                    version, script_file
+                )
 
             cache_payload = {"config": buff_config, "scripts": scripts}
             if character_id is None:
@@ -315,7 +331,9 @@ class ConfigLoader:
                 self._character_buff_id_cache[character_id] = {}
             if entity_id not in self._character_buff_id_cache[character_id]:
                 self._character_buff_id_cache[character_id][entity_id] = {}
-            self._character_buff_id_cache[character_id][entity_id][version] = payload
+            self._character_buff_id_cache[character_id][entity_id][version] = (
+                payload
+            )
 
     def _load_json(self, path: Path) -> dict[str, Any] | None:
         try:
@@ -327,8 +345,9 @@ class ConfigLoader:
             return None
         return None
 
-    def _get_latest(self, dataset: dict[str, dict[str, Any]],
-                    version: str | None) -> dict[str, Any] | None:
+    def _get_latest(
+        self, dataset: dict[str, dict[str, Any]], version: str | None
+    ) -> dict[str, Any] | None:
         if not dataset:
             return None
         if version:
@@ -336,15 +355,18 @@ class ConfigLoader:
         latest_ver = max(dataset.keys(), key=self._parse_version)
         return dataset[latest_ver]
 
-    def get_character(self,
-                      name: str,
-                      version: str | None = None) -> dict[str, Any] | None:
-        return self._get_latest(self._cache["characters"].get(name, {}),
-                                version)
+    def get_character(
+        self, name: str, version: str | None = None
+    ) -> dict[str, Any] | None:
+        return self._get_latest(
+            self._cache["characters"].get(name, {}), version
+        )
 
     def get_character_versions(self, name: str) -> list[str]:
-        return sorted(self._cache["characters"].get(name, {}).keys(),
-                      key=self._parse_version)
+        return sorted(
+            self._cache["characters"].get(name, {}).keys(),
+            key=self._parse_version,
+        )
 
     def get_all_characters(self) -> list[CharacterConfig]:
         """返回所有角色配置（最新版本）"""
@@ -355,24 +377,28 @@ class ConfigLoader:
                 all_characters.append(latest["config"])
         return all_characters
 
-    def get_light_cone(self,
-                       name: str,
-                       version: str | None = None) -> dict[str, Any] | None:
-        return self._get_latest(self._cache["light_cones"].get(name, {}),
-                                version)
+    def get_light_cone(
+        self, name: str, version: str | None = None
+    ) -> dict[str, Any] | None:
+        return self._get_latest(
+            self._cache["light_cones"].get(name, {}), version
+        )
 
     def get_light_cone_versions(self, name: str) -> list[str]:
-        return sorted(self._cache["light_cones"].get(name, {}).keys(),
-                      key=self._parse_version)
+        return sorted(
+            self._cache["light_cones"].get(name, {}).keys(),
+            key=self._parse_version,
+        )
 
-    def get_relic_set(self,
-                      name: str,
-                      version: str | None = None) -> dict[str, Any] | None:
+    def get_relic_set(
+        self, name: str, version: str | None = None
+    ) -> dict[str, Any] | None:
         return self._get_latest(self._cache["relics"].get(name, {}), version)
 
     def get_relic_set_versions(self, name: str) -> list[str]:
-        return sorted(self._cache["relics"].get(name, {}).keys(),
-                      key=self._parse_version)
+        return sorted(
+            self._cache["relics"].get(name, {}).keys(), key=self._parse_version
+        )
 
     def get_all_light_cones(self) -> list[LightConeConfig]:
         all_light_cones: list[LightConeConfig] = []
@@ -395,21 +421,27 @@ class ConfigLoader:
         character_id: int,
         version: str | None = None,
     ) -> dict[str, Any] | None:
-        return self._get_latest(self._id_cache["characters"].get(character_id, {}), version)
+        return self._get_latest(
+            self._id_cache["characters"].get(character_id, {}), version
+        )
 
     def get_light_cone_by_id(
         self,
         light_cone_id: int,
         version: str | None = None,
     ) -> dict[str, Any] | None:
-        return self._get_latest(self._id_cache["light_cones"].get(light_cone_id, {}), version)
+        return self._get_latest(
+            self._id_cache["light_cones"].get(light_cone_id, {}), version
+        )
 
     def get_relic_set_by_id(
         self,
         set_id: int,
         version: str | None = None,
     ) -> dict[str, Any] | None:
-        return self._get_latest(self._id_cache["relics"].get(set_id, {}), version)
+        return self._get_latest(
+            self._id_cache["relics"].get(set_id, {}), version
+        )
 
     def get_buff(
         self,
@@ -418,7 +450,9 @@ class ConfigLoader:
         character_id: int | None = None,
     ) -> dict[str, Any] | None:
         if character_id is not None:
-            character_dataset = self._character_buff_cache.get(character_id, {}).get(name, {})
+            character_dataset = self._character_buff_cache.get(
+                character_id, {}
+            ).get(name, {})
             if version:
                 latest = character_dataset.get(version)
                 if latest is not None:
@@ -436,7 +470,9 @@ class ConfigLoader:
         character_id: int | None = None,
     ) -> dict[str, Any] | None:
         if character_id is not None:
-            character_dataset = self._character_buff_id_cache.get(character_id, {}).get(buff_id, {})
+            character_dataset = self._character_buff_id_cache.get(
+                character_id, {}
+            ).get(buff_id, {})
             if version:
                 latest = character_dataset.get(version)
                 if latest is not None:
@@ -445,7 +481,9 @@ class ConfigLoader:
                 latest = self._get_latest(character_dataset, None)
                 if latest is not None:
                     return latest
-        return self._get_latest(self._id_cache["buffs"].get(buff_id, {}), version)
+        return self._get_latest(
+            self._id_cache["buffs"].get(buff_id, {}), version
+        )
 
     def get_buff_versions(
         self,
@@ -456,9 +494,13 @@ class ConfigLoader:
             dataset = self._character_buff_cache.get(character_id, {}).get(name)
             if dataset:
                 return sorted(dataset.keys(), key=self._parse_version)
-        return sorted(self._cache["buffs"].get(name, {}).keys(), key=self._parse_version)
+        return sorted(
+            self._cache["buffs"].get(name, {}).keys(), key=self._parse_version
+        )
 
-    def get_all_buffs(self, character_id: int | None = None) -> list[BuffConfig]:
+    def get_all_buffs(
+        self, character_id: int | None = None
+    ) -> list[BuffConfig]:
         if character_id is not None:
             all_buffs: list[BuffConfig] = []
             character_dataset = self._character_buff_cache.get(character_id, {})

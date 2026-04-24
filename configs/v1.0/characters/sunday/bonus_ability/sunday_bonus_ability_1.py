@@ -10,5 +10,3 @@ class SundayBonusAbility1(BaseSkill):
         """TODO: implement behavior."""
         _ = args, kwargs
         return None
-
-

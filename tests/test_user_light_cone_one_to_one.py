@@ -59,7 +59,9 @@ def test_character_light_cone_relationship_is_scalar():
         session.add(character)
         session.flush()
 
-        light_cone = UserLightCone(config_id=3001, version="v1.0", character=character)
+        light_cone = UserLightCone(
+            config_id=3001, version="v1.0", character=character
+        )
         session.add(light_cone)
         session.commit()
 

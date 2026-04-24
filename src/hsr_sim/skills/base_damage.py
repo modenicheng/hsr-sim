@@ -2,7 +2,7 @@
 import esper
 
 from .base import BaseSkill
-from src.hsr_sim.ecs.components import AttackComponent, BuffContainerComponent, CritDamageComponent, CritRateComponent
+from src.hsr_sim.ecs.components import AttackComponent
 from src.hsr_sim.hooks.hook_points import HookPoint
 
 

@@ -32,9 +32,12 @@ def calculate_relic_stats(relic_ids: list[int]) -> dict[StatType, float]:
                 logger.warning(f"Relic with id {rid} not found in database.")
                 continue  # 或者抛出异常
             # 主词条计算
-            growth = MAIN_STAT_GROWTH_MAP[StatType(
-                relic.main_stat_type)][relic.rarity]
-            main_value = growth.base_value + growth.growth_per_level * relic.level
+            growth = MAIN_STAT_GROWTH_MAP[StatType(relic.main_stat_type)][
+                relic.rarity
+            ]
+            main_value = (
+                growth.base_value + growth.growth_per_level * relic.level
+            )
             total[StatType(relic.main_stat_type)] += main_value
 
             # 副词条计算
@@ -48,13 +51,19 @@ def calculate_relic_stats(relic_ids: list[int]) -> dict[StatType, float]:
 
 
 def calculate_equipped_relic_stats(
-        equipped_relics: EquippedRelicsComponent) -> dict[StatType, float]:
+    equipped_relics: EquippedRelicsComponent,
+) -> dict[StatType, float]:
     """计算角色当前装备的遗器提供的总属性加成"""
     relic_ids = [
-        rid for rid in [
-            equipped_relics.head, equipped_relics.hands, equipped_relics.torso,
-            equipped_relics.feet, equipped_relics.planar_sphere,
-            equipped_relics.link_rope
-        ] if rid is not None
+        rid
+        for rid in [
+            equipped_relics.head,
+            equipped_relics.hands,
+            equipped_relics.torso,
+            equipped_relics.feet,
+            equipped_relics.planar_sphere,
+            equipped_relics.link_rope,
+        ]
+        if rid is not None
     ]
     return calculate_relic_stats(relic_ids)

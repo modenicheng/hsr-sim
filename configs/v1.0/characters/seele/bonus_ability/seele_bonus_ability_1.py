@@ -10,5 +10,3 @@ class SeeleBonusAbility1(BaseSkill):
         """TODO: implement behavior."""
         _ = args, kwargs
         return None
-
-

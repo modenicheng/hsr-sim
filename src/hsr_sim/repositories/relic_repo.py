@@ -4,7 +4,6 @@ from .base import BaseRepository
 
 
 class UserRelicRepository(BaseRepository[UserRelic]):
-
     def __init__(self, db):
         super().__init__(UserRelic, db)
 
@@ -15,7 +14,11 @@ class UserRelicRepository(BaseRepository[UserRelic]):
         return self.list_by_filters(slot=slot)
 
     def list_unequipped(self) -> list[UserRelic]:
-        return self.db.query(UserRelic).filter(UserRelic.equipped_by.is_(None)).all()
+        return (
+            self.db.query(UserRelic)
+            .filter(UserRelic.equipped_by.is_(None))
+            .all()
+        )
 
     def list_unequipped_by_slot(self, slot: str) -> list[UserRelic]:
         return (

@@ -1,7 +1,5 @@
 """Test suite for config validation script."""
 
-from pathlib import Path
-
 from scripts.validate_configs import ConfigValidator
 
 
@@ -52,7 +50,11 @@ def test_validator_detects_duplicate_ids(tmp_path):
 
     # Check for duplicate ID error
     errors = [i for i in validator.issues if i["level"] == "error"]
-    dup_errors = [e for e in errors if "duplicate" in e["type"] or "Found in" in e["message"]]
+    dup_errors = [
+        e
+        for e in errors
+        if "duplicate" in e["type"] or "Found in" in e["message"]
+    ]
     assert len(dup_errors) >= 1, "Should detect duplicate IDs"
 
 
@@ -97,7 +99,9 @@ def test_validator_validates_execute_method(tmp_path):
     # Check for warning
     warnings = [i for i in validator.issues if i["level"] == "warning"]
     execute_warnings = [w for w in warnings if "execute method" in w["message"]]
-    assert len(execute_warnings) >= 1, "Should warn about missing execute method"
+    assert len(execute_warnings) >= 1, (
+        "Should warn about missing execute method"
+    )
 
 
 def test_validator_checks_base_skill_import(tmp_path):
@@ -109,9 +113,7 @@ def test_validator_checks_base_skill_import(tmp_path):
     # Create a Python file without BaseSkill import
     no_import_py = enemies_dir / "no_import.py"
     no_import_py.write_text(
-        "class TestSkill:\n"
-        "    def execute(self):\n"
-        "        pass"
+        "class TestSkill:\n    def execute(self):\n        pass"
     )
 
     # Validate
@@ -121,4 +123,6 @@ def test_validator_checks_base_skill_import(tmp_path):
     # Check for warning
     warnings = [i for i in validator.issues if i["level"] == "warning"]
     import_warnings = [w for w in warnings if "BaseSkill" in w["message"]]
-    assert len(import_warnings) >= 1, "Should warn about missing BaseSkill import"
+    assert len(import_warnings) >= 1, (
+        "Should warn about missing BaseSkill import"
+    )

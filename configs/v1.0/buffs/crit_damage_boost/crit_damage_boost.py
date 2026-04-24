@@ -10,5 +10,3 @@ class CritDamageBoost(BaseSkill):
         """TODO: implement buff behavior."""
         _ = args, kwargs
         return None
-
-

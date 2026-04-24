@@ -6,8 +6,7 @@ from hsr_sim.utils.import_utils import import_class
 def test_import_class_loads_expected_class(tmp_path, monkeypatch):
     module_file = tmp_path / "fake_module.py"
     module_file.write_text(
-        "class TargetClass:\n"
-        "    value = 42\n",
+        "class TargetClass:\n    value = 42\n",
         encoding="utf-8",
     )
     monkeypatch.syspath_prepend(str(tmp_path))

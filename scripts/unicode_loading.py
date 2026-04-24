@@ -11,5 +11,7 @@ def main_loop() -> None:
             print(f"\r\b{char}", end="")
             sys.stdout.flush()
             time.sleep(0.1)
+
+
 if __name__ == "__main__":
     main_loop()

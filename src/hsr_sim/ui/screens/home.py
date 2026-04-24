@@ -14,21 +14,22 @@ LOGO = [
     "█░░░█░   ░░█  █░█░░         ░░█    █░   █░ ░█░",
     "█░  █░     █░ █░ █            █░   █░   █░  █░",
     "█░  █░ ████ ░ █░  █       ████ ░ █████  █░  █░",
-    " ░   ░  ░░░░   ░   ░       ░░░░   ░░░░░  ░   ░"
+    " ░   ░  ░░░░   ░   ░       ░░░░   ░░░░░  ░   ░",
 ]
 
 
 class HomeActionsApp(Protocol):
-
     def action_manage_characters(self) -> None: ...
 
     def action_manage_light_cones(self) -> None: ...
 
     def action_manage_relics(self) -> None: ...
 
-    def action_start_battle_sim(self) -> None: ...
+    def action_start_battle_sim(self) -> None:
+        ...
         # 跳转到战斗准备界面
         # 配置战斗信息后开始模拟
+
 
 class HomeScreen(Screen):
     DEFAULT_CSS = """
@@ -81,10 +82,14 @@ class HomeScreen(Screen):
         with Container(id="home-body"):
             yield Label("\n".join(LOGO), id="logo")
             with Container(id="home-actions"):
-                yield Button("管理角色", id="btn-manage-characters", variant="primary")
+                yield Button(
+                    "管理角色", id="btn-manage-characters", variant="primary"
+                )
                 yield Button("管理光锥", id="btn-manage-light-cones")
                 yield Button("管理遗器", id="btn-manage-relics")
-                yield Button("开始战斗模拟", id="btn-start-battle", variant="success")
+                yield Button(
+                    "开始战斗模拟", id="btn-start-battle", variant="success"
+                )
 
     def on_mount(self) -> None:
         self._update_action_layout(self.size.width)

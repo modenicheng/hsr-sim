@@ -21,7 +21,9 @@ def test_character_generator_outputs_loadable_scripts(tmp_path, monkeypatch):
     )
     assert cls.__name__ == "AlphaBasicAtk"
 
-    module = loader.load_module("configs.v1_0.characters.alpha.talent.alpha_talent")
+    module = loader.load_module(
+        "configs.v1_0.characters.alpha.talent.alpha_talent"
+    )
     assert not hasattr(module, "apply")
 
 
@@ -77,7 +79,9 @@ def test_buff_generator_outputs_loadable_global_script(tmp_path, monkeypatch):
     assert cls.__name__ == "DeltaBuff"
 
 
-def test_buff_generator_outputs_loadable_character_script(tmp_path, monkeypatch):
+def test_buff_generator_outputs_loadable_character_script(
+    tmp_path, monkeypatch
+):
     configs_root = tmp_path / "configs"
     monkeypatch.setattr(create_buff, "CONFIGS_DIR", configs_root)
     monkeypatch.setattr("hsr_sim.skills.script_loader.PROJECT_ROOT", tmp_path)

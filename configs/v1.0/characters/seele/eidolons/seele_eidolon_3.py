@@ -1,14 +1,11 @@
-"""seele eidolon 3 script."""
+"""seele eidolon 3: 缭乱"""
 
 from hsr_sim.skills.script_loader import BaseSkill
 
 
 class SeeleEidolon3(BaseSkill):
-    """Auto-generated skill script class."""
+    def activate(self):
+        pass
 
-    def execute(self, *args, **kwargs):
-        """TODO: implement behavior."""
-        _ = args, kwargs
-        return None
-
-
+    def deactivate(self):
+        pass

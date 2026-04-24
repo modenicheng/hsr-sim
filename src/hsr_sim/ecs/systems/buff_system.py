@@ -1,4 +1,5 @@
 """Buff 系统：处理 Buff 生命周期和过期管理。"""
+
 from esper import Processor
 import esper
 from eventure import Event
@@ -42,8 +43,9 @@ class BuffSystem(Processor):
         # 该事件处理已由其他系统完成，此处作为确认点
         pass
 
-    def _update_buffs(self, entity_id: int,
-                      buff_container: BuffContainerComponent):
+    def _update_buffs(
+        self, entity_id: int, buff_container: BuffContainerComponent
+    ):
         """更新实体的所有 Buff，处理持续时间和过期。"""
         if not buff_container.buffs:
             return
@@ -53,10 +55,15 @@ class BuffSystem(Processor):
         for buff in buff_container.buffs:
             # 递减 Buff 持续时间
             if buff.remaining_duration is not None:
-                buff.remaining_duration = max(0.0, buff.remaining_duration - 1.0)
+                buff.remaining_duration = max(
+                    0.0, buff.remaining_duration - 1.0
+                )
 
             # 检查是否过期
-            if buff.remaining_duration is not None and buff.remaining_duration <= 0:
+            if (
+                buff.remaining_duration is not None
+                and buff.remaining_duration <= 0
+            ):
                 expired_buffs.append(buff)
 
         # 处理过期 Buff
@@ -75,4 +82,5 @@ class BuffSystem(Processor):
                     "entity_id": entity_id,
                     "buff_id": buff.buff_id,
                 },
-            ))
+            )
+        )

@@ -1,4 +1,5 @@
 """战斗状态、阶段和行动输入定义。"""
+
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Literal

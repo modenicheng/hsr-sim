@@ -12,9 +12,11 @@ if TYPE_CHECKING:
 
 class UserRelic(Base):
     __tablename__ = "user_relics"
-    __table_args__ = (Index("idx_user_relics_equipped_by", "equipped_by"), )
+    __table_args__ = (Index("idx_user_relics_equipped_by", "equipped_by"),)
     id: Mapped[int] = mapped_column(primary_key=True)
-    version: Mapped[str] = mapped_column(String(10), default="v1.0")  # 遗器配置版本
+    version: Mapped[str] = mapped_column(
+        String(10), default="v1.0"
+    )  # 遗器配置版本
     set_id: Mapped[int]  # 无须外键，直接绑定到遗器套装配置 ID
     slot: Mapped[str]  # RelicSlot 的字符串值
     level: Mapped[int] = mapped_column(default=0)
@@ -24,7 +26,8 @@ class UserRelic(Base):
     # roll 取值 0=low, 1=med, 2=high
     sub_stats: Mapped[list[dict]] = mapped_column(JSONText, default=list)
     equipped_by: Mapped[int | None] = mapped_column(
-        ForeignKey("user_characters.id",
-                   ondelete="SET NULL"), nullable=True)  # 关联的角色 ID，可以为 null
+        ForeignKey("user_characters.id", ondelete="SET NULL"), nullable=True
+    )  # 关联的角色 ID，可以为 null
     character: Mapped["UserCharacter | None"] = relationship(
-        "UserCharacter", back_populates="equipped_relics")
+        "UserCharacter", back_populates="equipped_relics"
+    )

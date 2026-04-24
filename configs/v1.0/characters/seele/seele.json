@@ -11,7 +11,7 @@
     "id": 11000000,
     "name": "seele_basic",
     "type": "basic",
-    "description": "TODO: fill description",
+    "description": "对指定敌方单体造成少量量子属性伤害。",
     "target_type": "single_target",
     "energy_gain": 0.0,
     "script": "skills/seele_basic_atk"
@@ -20,7 +20,7 @@
     "id": 12000000,
     "name": "seele_skill",
     "type": "skill",
-    "description": "TODO: fill description",
+    "description": "对指定敌方单体造成量子属性伤害，并使自身速度提高25%，持续1回合。",
     "target_type": "single_target",
     "energy_gain": 0.0,
     "script": "skills/seele_skill"
@@ -29,7 +29,7 @@
     "id": 13000000,
     "name": "seele_ultimate",
     "type": "ultimate",
-    "description": "TODO: fill description",
+    "description": "对指定敌方单体造成大量量子属性伤害，并进入【增幅】状态。",
     "target_type": "single_target",
     "energy_gain": 0.0,
     "script": "skills/seele_ultimate"
@@ -39,42 +39,42 @@
       "id": 14000000,
       "index": 1,
       "name": "seele_eidolon_1",
-      "describe": "TODO: fill eidolon describe",
+      "describe": "斩尽：对当前生命值百分比小于等于80%的敌方目标造成伤害时，暴击率提高15%。",
       "script": "eidolons/seele_eidolon_1"
     },
     {
       "id": 14000001,
       "index": 2,
       "name": "seele_eidolon_2",
-      "describe": "TODO: fill eidolon describe",
+      "describe": "蝶舞：战技的加速效果可以叠加，最多叠加2层。",
       "script": "eidolons/seele_eidolon_2"
     },
     {
       "id": 14000002,
       "index": 3,
       "name": "seele_eidolon_3",
-      "describe": "TODO: fill eidolon describe",
+      "describe": "缭乱：战技等级+2，最多不超过15级；天赋等级+2，最多不超过15级。",
       "script": "eidolons/seele_eidolon_3"
     },
     {
       "id": 14000003,
       "index": 4,
       "name": "seele_eidolon_4",
-      "describe": "TODO: fill eidolon describe",
+      "describe": "掠影：希儿消灭敌方目标时，自身恢复15点能量。",
       "script": "eidolons/seele_eidolon_4"
     },
     {
       "id": 14000004,
       "index": 5,
       "name": "seele_eidolon_5",
-      "describe": "TODO: fill eidolon describe",
+      "describe": "锋锐：终结技等级+2，最多不超过15级；普攻等级+1，最多不超过10级。",
       "script": "eidolons/seele_eidolon_5"
     },
     {
       "id": 14000005,
       "index": 6,
       "name": "seele_eidolon_6",
-      "describe": "TODO: fill eidolon describe",
+      "describe": "离析：施放终结技攻击后使受到攻击的敌方单体陷入【乱蝶】状态，持续1回合。",
       "script": "eidolons/seele_eidolon_6"
     }
   ],
@@ -82,33 +82,33 @@
     {
       "id": 15000000,
       "name": "seele_talent",
-      "description": "TODO: fill talent description",
+      "description": "消灭敌方目标后，获得【再现】效果，立即再次行动并造成的伤害提高。",
       "script": "talent/seele_talent"
     }
   ],
   "technique": {
     "id": 16000000,
     "name": "seele_technique",
-    "description": "TODO: fill technique description",
+    "description": "立即进入【隐身】状态，持续到战斗开始后一定回合。",
     "script": "technique/seele_technique"
   },
   "bonus_abilities": [
     {
       "id": 17000000,
       "name": "seele_bonus_ability_1",
-      "description": "TODO: fill bonus ability description",
+      "description": "TODO: fill description",
       "script": "bonus_ability/seele_bonus_ability_1"
     },
     {
       "id": 17000001,
       "name": "seele_bonus_ability_2",
-      "description": "TODO: fill bonus ability description",
+      "description": "TODO: fill description",
       "script": "bonus_ability/seele_bonus_ability_2"
     },
     {
       "id": 17000002,
       "name": "seele_bonus_ability_3",
-      "description": "TODO: fill bonus ability description",
+      "description": "TODO: fill description",
       "script": "bonus_ability/seele_bonus_ability_3"
     }
   ],

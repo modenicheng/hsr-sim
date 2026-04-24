@@ -158,14 +158,23 @@ def run_create_buff(
         )[0]
         script_path = f"buffs/{buff_name}/{buff_name}"
     else:
-        buff_dir = CONFIGS_DIR / version / "characters" / character_name / "buffs" / buff_name
+        buff_dir = (
+            CONFIGS_DIR
+            / version
+            / "characters"
+            / character_name
+            / "buffs"
+            / buff_name
+        )
         buff_id = allocate_ids(
             configs_dir=CONFIGS_DIR,
             version=version,
             id_range=CHARACTER_BUFF_ID_RANGE,
             count=1,
         )[0]
-        script_path = f"characters/{character_name}/buffs/{buff_name}/{buff_name}"
+        script_path = (
+            f"characters/{character_name}/buffs/{buff_name}/{buff_name}"
+        )
 
     if buff_dir.exists():
         if force:

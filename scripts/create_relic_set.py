@@ -54,8 +54,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "names",
         nargs="+",
-        help=
-        "One or more relic set names (English characters and underscores only)",
+        help="One or more relic set names (English characters and underscores only)",
     )
     parser.add_argument(
         "--version",
@@ -74,8 +73,7 @@ def parse_args() -> Namespace:
         dest="set_type",
         required=True,
         choices=["relics", "planar_ornaments"],
-        help=
-        "Set type: relics=outer circle relics, planar_ornaments=planar ornaments.",
+        help="Set type: relics=outer circle relics, planar_ornaments=planar ornaments.",
     )
 
     args = parser.parse_args()
@@ -92,7 +90,10 @@ def parse_args() -> Namespace:
 def _slot_list(set_type: str) -> list[RelicSlot]:
     if set_type == "relics":
         return [
-            RelicSlot.HEAD, RelicSlot.HANDS, RelicSlot.TORSO, RelicSlot.FEET
+            RelicSlot.HEAD,
+            RelicSlot.HANDS,
+            RelicSlot.TORSO,
+            RelicSlot.FEET,
         ]
     return [RelicSlot.PLANAR_SPHERE, RelicSlot.LINK_ROPE]
 
@@ -107,9 +108,9 @@ def _script_template(set_name: str, script_name: str) -> str:
     )
 
 
-def _allocate_ids(version: str,
-                  id_range: tuple[int, int],
-                  count: int = 1) -> list[int]:
+def _allocate_ids(
+    version: str, id_range: tuple[int, int], count: int = 1
+) -> list[int]:
     return allocate_ids(
         configs_dir=CONFIGS_DIR,
         version=version,
@@ -134,10 +135,9 @@ def _build_relic_payload(
     return relic.model_dump(mode="json")
 
 
-def run_create_relic_set(name: str,
-                         version: str,
-                         set_type: str,
-                         force: bool = False) -> None:
+def run_create_relic_set(
+    name: str, version: str, set_type: str, force: bool = False
+) -> None:
     set_dir = CONFIGS_DIR / version / "relics" / name
 
     if set_dir.exists():

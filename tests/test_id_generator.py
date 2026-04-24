@@ -1,4 +1,3 @@
-import pytest
 import uuid
 
 from hsr_sim.utils.id_generator import new_id

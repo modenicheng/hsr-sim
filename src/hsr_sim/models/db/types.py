@@ -5,6 +5,7 @@ from sqlalchemy import TypeDecorator, TEXT
 
 class JSONText(TypeDecorator):
     """将 Python 的 dict/list 自动序列化为 TEXT 存储在数据库中"""
+
     impl = TEXT  # 告诉 SQLAlchemy，底层使用 TEXT 列
 
     def process_bind_param(self, value, dialect):

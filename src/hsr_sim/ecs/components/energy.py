@@ -7,8 +7,11 @@ class StandardEnergyComponent(BaseModel):
 
     @model_validator(mode="after")
     def check_energy(self):
-        if (self.energy is not None and self.max_energy is not None
-                and self.energy > self.max_energy):
+        if (
+            self.energy is not None
+            and self.max_energy is not None
+            and self.energy > self.max_energy
+        ):
             raise ValueError("energy cannot be greater than max_energy")
         return self
 
@@ -20,7 +23,10 @@ class SpecialEnergyComponent(BaseModel):
 
     @model_validator(mode="after")
     def check_energy(self):
-        if (self.energy is not None and self.max_energy is not None
-                and self.energy > self.max_energy):
+        if (
+            self.energy is not None
+            and self.max_energy is not None
+            and self.energy > self.max_energy
+        ):
             raise ValueError("energy cannot be greater than max_energy")
         return self

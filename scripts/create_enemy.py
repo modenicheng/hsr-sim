@@ -119,9 +119,9 @@ def _make_enemy_passive_script_template(enemy_name: str) -> str:
     )
 
 
-def _allocate_ids(version: str,
-                  id_range: tuple[int, int],
-                  count: int = 1) -> list[int]:
+def _allocate_ids(
+    version: str, id_range: tuple[int, int], count: int = 1
+) -> list[int]:
     return allocate_ids(
         configs_dir=CONFIGS_DIR,
         version=version,
@@ -142,11 +142,13 @@ def run_create_enemy(
             shutil.rmtree(enemy_dir)
         else:
             available_versions = sorted(
-                [p.name for p in CONFIGS_DIR.iterdir() if p.is_dir()])
+                [p.name for p in CONFIGS_DIR.iterdir() if p.is_dir()]
+            )
             version_hint = (
                 f"Available versions: {', '.join(available_versions)}"
-                if available_versions else
-                "No available version directories detected.")
+                if available_versions
+                else "No available version directories detected."
+            )
             raise FileExistsError(
                 "Same enemy already exists in the same version.\n"
                 f"Enemy: {enemy_name}\n"
@@ -172,7 +174,8 @@ def run_create_enemy(
     if existing_files:
         raise FileExistsError(
             "Target files already exist, aborting to avoid partial overwrite:\n"
-            + "\n".join(existing_files))
+            + "\n".join(existing_files)
+        )
 
     created_files: list[Path] = []
 

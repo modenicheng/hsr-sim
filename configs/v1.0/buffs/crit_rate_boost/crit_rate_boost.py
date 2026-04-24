@@ -10,5 +10,3 @@ class CritRateBoost(BaseSkill):
         """TODO: implement buff behavior."""
         _ = args, kwargs
         return None
-
-

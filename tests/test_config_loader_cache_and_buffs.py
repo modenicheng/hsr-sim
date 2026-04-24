@@ -8,7 +8,9 @@ config_loader_module = importlib.import_module("hsr_sim.services.config_loader")
 
 def _write_json(path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
 
 def _character_payload() -> dict:
@@ -108,7 +110,11 @@ def test_config_loader_supports_id_cache_and_buffs(tmp_path, monkeypatch):
     version = "v1.0"
 
     _write_json(
-        configs_root / version / "characters" / "cache_char" / "cache_char.json",
+        configs_root
+        / version
+        / "characters"
+        / "cache_char"
+        / "cache_char.json",
         _character_payload(),
     )
     _write_json(
@@ -133,9 +139,9 @@ def test_config_loader_supports_id_cache_and_buffs(tmp_path, monkeypatch):
             "params": {"atk_percent": 0.12},
         },
     )
-    (configs_root / version / "buffs" / "team_buff" / "team_buff.py").write_text(
-        "", encoding="utf-8"
-    )
+    (
+        configs_root / version / "buffs" / "team_buff" / "team_buff.py"
+    ).write_text("", encoding="utf-8")
 
     monkeypatch.setattr(config_loader_module, "CONFIGS_DIR", configs_root)
     loader = config_loader_module.ConfigLoader()
@@ -237,6 +243,8 @@ def test_config_loader_prefers_character_specific_buff_over_global_buff(
     assert global_buff["config"].name == "spd_boost"
     assert override_buff["config"].name == "spd_boost"
     assert override_buff_by_id["config"].name == "spd_boost"
-    assert loader.get_buff_versions("spd_boost", character_id=10010001) == ["v1.0"]
+    assert loader.get_buff_versions("spd_boost", character_id=10010001) == [
+        "v1.0"
+    ]
     assert len(loader.get_all_buffs()) == 1
     assert len(loader.get_all_buffs(character_id=10010001)) == 1

@@ -7,8 +7,11 @@ class HealthComponent(BaseModel):
 
     @model_validator(mode="after")
     def check_hp(self):
-        if (self.value is not None and self.max_value is not None
-                and self.value > self.max_value):
+        if (
+            self.value is not None
+            and self.max_value is not None
+            and self.value > self.max_value
+        ):
             raise ValueError("Health value cannot be greater than max_value")
         return self
 

@@ -10,5 +10,3 @@ class MaraStruckSoldierPassive(BaseSkill):
         """TODO: implement enemy passive behavior."""
         _ = args, kwargs
         return None
-
-

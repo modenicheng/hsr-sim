@@ -18,6 +18,7 @@ from hsr_sim.models.schemas.character import CharacterConfig
 from hsr_sim.services.config_loader import ConfigLoader
 from .base import BaseSkill, SkillContext
 
+
 def _snake_to_camel(name: str) -> str:
     return "".join(part.capitalize() for part in name.split("_"))
 
@@ -71,7 +72,9 @@ class DynamicClassLoader:
             return self._class_cache[cache_key]
 
         module = self.load_module(module_path)
-        expected_name = class_name or _snake_to_camel(module_path.split(".")[-1])
+        expected_name = class_name or _snake_to_camel(
+            module_path.split(".")[-1]
+        )
 
         if not hasattr(module, expected_name):
             raise SkillClassNotFoundError(
@@ -90,7 +93,9 @@ class DynamicClassLoader:
                 )
             )
 
-        if expected_base_class is not None and not issubclass(cls, expected_base_class):
+        if expected_base_class is not None and not issubclass(
+            cls, expected_base_class
+        ):
             raise SkillTypeMismatchError(
                 self._format_error(
                     (
@@ -130,7 +135,11 @@ class DynamicClassLoader:
             return None
 
         if parts[0] == "configs" and len(parts) >= 2:
-            parts = ["configs", _denormalize_version_token(parts[1]), *parts[2:]]
+            parts = [
+                "configs",
+                _denormalize_version_token(parts[1]),
+                *parts[2:],
+            ]
 
         return PROJECT_ROOT.joinpath(*parts).with_suffix(".py")
 
@@ -187,7 +196,9 @@ class SkillScriptLoader:
         return cls(context)
 
     @staticmethod
-    def _build_module_path(*, version: str, char_name: str, script_name: str) -> str:
+    def _build_module_path(
+        *, version: str, char_name: str, script_name: str
+    ) -> str:
         version_token = _normalize_version_token(version)
         if "/" in script_name:
             script_module = script_name.replace("/", ".")
@@ -237,7 +248,9 @@ class CharacterSkillLoader:
             character.char_config_id,
             version=character.version,
         )
-        if payload is None or not isinstance(payload.get("config"), CharacterConfig):
+        if payload is None or not isinstance(
+            payload.get("config"), CharacterConfig
+        ):
             raise SkillLoaderError(
                 (
                     "Character config not found "

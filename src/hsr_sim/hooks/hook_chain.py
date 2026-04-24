@@ -31,10 +31,12 @@ class HookChain:
         self._next_callback_id = 1
         self._next_order = 1
 
-    def register(self,
-                 callback: Callable[..., Any],
-                 priority: int = 0,
-                 owner: str | None = None) -> HookHandle:
+    def register(
+        self,
+        callback: Callable[..., Any],
+        priority: int = 0,
+        owner: str | None = None,
+    ) -> HookHandle:
         handle = HookHandle(callback_id=self._next_callback_id, owner=owner)
         self._next_callback_id += 1
         self._entries.append(
@@ -43,7 +45,8 @@ class HookChain:
                 order=self._next_order,
                 callback=callback,
                 handle=handle,
-            ))
+            )
+        )
         self._next_order += 1
         self._entries.sort(key=lambda item: (-item.priority, item.order))
         return handle
@@ -65,11 +68,9 @@ class HookChain:
     def clear(self) -> None:
         self._entries.clear()
 
-    def trigger(self,
-                current_value: Any = None,
-                /,
-                *args: Any,
-                **kwargs: Any) -> HookResult:
+    def trigger(
+        self, current_value: Any = None, /, *args: Any, **kwargs: Any
+    ) -> HookResult:
         result = HookResult(value=current_value)
         current = current_value
 

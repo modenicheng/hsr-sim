@@ -1,9 +1,14 @@
 """伤害系统：处理伤害计算和 Hook 干预。"""
+
+import random
+
 import esper
 from esper import Processor
 
 from src.hsr_sim.ecs.components import (
     AttackComponent,
+    CritDamageComponent,
+    CritRateComponent,
     DefenseComponent,
 )
 from src.hsr_sim.hooks.hook_points import HookPoint
@@ -29,13 +34,49 @@ class DamageSystem(Processor):
         """系统在这里暂无操作。伤害由其他系统触发。"""
         pass
 
+    def _determine_critical(
+        self,
+        attacker_id: int,
+        defender_id: int,
+        damage_type: str | None = None,
+    ) -> tuple[bool, float, float]:
+        """动态确定是否暴击，返回 (is_critical, final_crit_rate, final_crit_dmg)。
+
+        流程：
+        1. 从攻击者读取 CritRateComponent / CritDamageComponent
+        2. 触发 BEFORE_CRIT_DETERMINATION hook 允许修改暴击率
+        3. 与随机数比较确定暴击
+        4. 暴击时使用 CritDamageComponent.value 作为暴击倍率
+        """
+        crit_rate_comp = esper.try_component(attacker_id, CritRateComponent)
+        base_crit_rate = crit_rate_comp.value if crit_rate_comp else 0.05
+
+        crit_dmg_comp = esper.try_component(attacker_id, CritDamageComponent)
+        base_crit_dmg = crit_dmg_comp.value if crit_dmg_comp else 0.50
+
+        hook_result = self.hook_chain.trigger(
+            HookPoint.BEFORE_CRIT_DETERMINATION,
+            base_crit_rate,
+            attacker_id=attacker_id,
+            target_id=defender_id,
+            damage_type=damage_type,
+        )
+        final_crit_rate = (
+            hook_result.value
+            if hook_result.value is not None
+            else base_crit_rate
+        )
+
+        is_critical = random.random() < final_crit_rate
+        return is_critical, final_crit_rate, base_crit_dmg
+
     def calculate_and_apply_damage(
         self,
         attacker_id: int,
         defender_id: int,
         base_damage: float,
         damage_type: str | None = None,
-        critical: bool = False,
+        critical: bool | None = None,
     ) -> float:
         """计算并应用伤害。
 
@@ -44,11 +85,22 @@ class DamageSystem(Processor):
             defender_id: 防御者 ID
             base_damage: 基础伤害值
             damage_type: 伤害类型（可选）
-            critical: 是否暴击
+            critical: 是否暴击（None 表示自动判定）
 
         Returns:
             最终伤害值（经 Hook 修改后）
         """
+        # 暴击自动判定（当 critical 为 None 时）
+        if critical is None:
+            is_crit, _, crit_dmg = self._determine_critical(
+                attacker_id,
+                defender_id,
+                damage_type=damage_type,
+            )
+            critical = is_crit
+        else:
+            crit_dmg = 0.5
+
         # 前置 Hook：BEFORE_DAMAGE_CALCULATION
         hook_result = self.hook_chain.trigger(
             HookPoint.BEFORE_DAMAGE_CALCULATION,
@@ -59,7 +111,9 @@ class DamageSystem(Processor):
             critical=critical,
         )
 
-        damage_after_hook_before = hook_result.value if hook_result.value is not None else base_damage
+        damage_after_hook_before = (
+            hook_result.value if hook_result.value is not None else base_damage
+        )
 
         # 伤害公式计算
         final_damage = self._apply_damage_formula(
@@ -67,6 +121,7 @@ class DamageSystem(Processor):
             attacker_id,
             defender_id,
             critical=critical,
+            crit_damage=crit_dmg,
         )
 
         # 后置 Hook：AFTER_DAMAGE_CALCULATION
@@ -79,7 +134,9 @@ class DamageSystem(Processor):
             critical=critical,
         )
 
-        final_damage = hook_result.value if hook_result.value is not None else final_damage
+        final_damage = (
+            hook_result.value if hook_result.value is not None else final_damage
+        )
 
         # 确保伤害不为负
         final_damage = max(0, final_damage)
@@ -102,6 +159,7 @@ class DamageSystem(Processor):
         attacker_id: int,
         defender_id: int,
         critical: bool = False,
+        crit_damage: float = 0.5,
     ) -> float:
         """应用伤害公式。
 
@@ -118,12 +176,13 @@ class DamageSystem(Processor):
         defense_reduction = 0.0
         if defender_defense:
             defense_reduction = defender_defense.value / (
-                defender_defense.value + 200)
+                defender_defense.value + 200
+            )
 
         damage = base_damage * attack_multiplier * (1 - defense_reduction)
 
-        # 暴击伤害加成（简化）
+        # 暴击伤害加成（使用 CritDamageComponent.value）
         if critical:
-            damage *= 1.5
+            damage *= 1.0 + crit_damage
 
         return damage

@@ -10,5 +10,3 @@ class SundaySkill(BaseSkill):
         """TODO: implement skill behavior."""
         _ = args, kwargs
         return None
-
-

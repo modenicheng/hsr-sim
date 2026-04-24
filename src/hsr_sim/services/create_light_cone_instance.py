@@ -4,7 +4,6 @@ from hsr_sim.repositories.light_cone_repo import LightConeRepository
 
 
 class LightConeService:
-
     def __init__(self, light_cone_repo: LightConeRepository):
         self.light_cone_repo = light_cone_repo
 
@@ -20,8 +19,9 @@ class LightConeService:
         """创建并持久化一个用户光锥实例，可选装备给指定角色。"""
         character: UserCharacter | None = None
         if equipped_to_character_id is not None:
-            character = self.light_cone_repo.db.get(UserCharacter,
-                                                    equipped_to_character_id)
+            character = self.light_cone_repo.db.get(
+                UserCharacter, equipped_to_character_id
+            )
             if character is None:
                 raise ValueError(
                     f"UserCharacter with id={equipped_to_character_id} not found"

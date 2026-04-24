@@ -1,4 +1,5 @@
 """BattleSession 集成测试。"""
+
 import esper
 import pytest
 from hsr_sim.services import config_loader
@@ -63,7 +64,9 @@ def test_action_input_validation():
     assert action.targets == [2]
 
 
-def _create_combat_entity(hp=1000, atk=100, defense=100, speed=100, identity=None):
+def _create_combat_entity(
+    hp=1000, atk=100, defense=100, speed=100, identity=None
+):
     entity = esper.create_entity()
     esper.add_component(entity, HealthComponent(value=hp, max_value=hp))
     esper.add_component(entity, AttackComponent(value=atk))
@@ -100,14 +103,17 @@ def test_submit_action_applies_damage_and_advances_turn(battle_session):
             action_type="basic",
             targets=[defender],
             params={"base_damage": 100.0},
-        ))
+        )
+    )
 
     hp_after = _health_value(defender)
     assert ok is True
     assert hp_after < hp_before
 
 
-def test_submit_action_unknown_type_returns_false_without_effect(battle_session):
+def test_submit_action_unknown_type_returns_false_without_effect(
+    battle_session,
+):
     attacker = _create_combat_entity(hp=1200, atk=120, defense=80, speed=120)
     defender = _create_combat_entity(hp=900, atk=90, defense=90, speed=90)
 
@@ -119,7 +125,8 @@ def test_submit_action_unknown_type_returns_false_without_effect(battle_session)
             actor_id=attacker,
             action_type="unknown_action",
             targets=[defender],
-        ))
+        )
+    )
 
     hp_after = _health_value(defender)
     assert ok is False
@@ -127,7 +134,9 @@ def test_submit_action_unknown_type_returns_false_without_effect(battle_session)
     assert battle_session.state == BattleState.WAITING_ACTION
 
 
-def test_submit_action_loads_skill_script_by_skill_id(monkeypatch, battle_session):
+def test_submit_action_loads_skill_script_by_skill_id(
+    monkeypatch, battle_session
+):
     payload = config_loader.get_character("seele", version="v1.0")
     assert payload is not None
     char_config = payload["config"]

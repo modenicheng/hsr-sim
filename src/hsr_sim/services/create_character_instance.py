@@ -4,11 +4,13 @@ from hsr_sim.logger import get_logger
 logger = get_logger(__name__)
 
 
-def create_character_instance(db,
-                              char_config_id: int,
-                              version: str = "v1.0",
-                              level: int = 80,
-                              eidolon_level: int = 0) -> UserCharacter:
+def create_character_instance(
+    db,
+    char_config_id: int,
+    version: str = "v1.0",
+    level: int = 80,
+    eidolon_level: int = 0,
+) -> UserCharacter:
     """创建一个新的 UserCharacter 实例并保存到数据库中。
 
     :param db: 数据库会话

@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock
 
 from hsr_sim.repositories.relic_repo import RelicRepository

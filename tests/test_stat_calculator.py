@@ -9,7 +9,6 @@ from hsr_sim.models.schemas.relics import MAIN_STAT_GROWTH_MAP, SUBSIDARY_STATS
 
 
 class _DummySessionContext:
-
     def __enter__(self):
         return object()
 
@@ -133,8 +132,12 @@ def test_calculate_relic_stats_supports_fixed_and_percent_sub_stats(
     assert result[StatType.DEF_PERCENT] == pytest.approx(
         expected_main_def_percent + SUBSIDARY_STATS[5][StatType.DEF_PERCENT][1]
     )
-    assert result[StatType.DEF] == pytest.approx(SUBSIDARY_STATS[5][StatType.DEF][0])
-    assert result[StatType.ATK] == pytest.approx(SUBSIDARY_STATS[5][StatType.ATK][2])
+    assert result[StatType.DEF] == pytest.approx(
+        SUBSIDARY_STATS[5][StatType.DEF][0]
+    )
+    assert result[StatType.ATK] == pytest.approx(
+        SUBSIDARY_STATS[5][StatType.ATK][2]
+    )
 
 
 def test_calculate_relic_stats_skips_missing_relic_and_logs_warning(
@@ -299,9 +302,7 @@ def test_calculate_relic_stats_multiple_relics_different_rarities(
             StatType.SPEED,
             StatType.CRIT_RATE,
         ]
-        sub_stats.append(
-            {"type": stat_types[i].value, "roll": roll}
-        )
+        sub_stats.append({"type": stat_types[i].value, "roll": roll})
 
     relics = {
         400: SimpleNamespace(
@@ -317,7 +318,8 @@ def test_calculate_relic_stats_multiple_relics_different_rarities(
 
     expected_main = (
         MAIN_STAT_GROWTH_MAP[StatType.HP_PERCENT][rarity].base_value
-        + MAIN_STAT_GROWTH_MAP[StatType.HP_PERCENT][rarity].growth_per_level * 12
+        + MAIN_STAT_GROWTH_MAP[StatType.HP_PERCENT][rarity].growth_per_level
+        * 12
     )
 
     assert result[StatType.HP_PERCENT] == pytest.approx(expected_main)

@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 class EquippedRelicsComponent(BaseModel):
     """角色当前装备的遗器实例ID"""
+
     head: int | None = None
     hands: int | None = None
     torso: int | None = None
@@ -14,4 +15,5 @@ class EquippedRelicsComponent(BaseModel):
 
 class EquippedLightConeComponent(BaseModel):
     """角色当前装备的光锥实例ID"""
+
     light_cone_id: int | None = None

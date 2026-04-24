@@ -15,10 +15,18 @@ def _copy_real_v1_data_with_normalized_light_cones(temp_configs) -> None:
             continue
         json_path = lc_dir / f"{lc_dir.name}.json"
         payload = json.loads(json_path.read_text(encoding="utf-8"))
-        payload["base_hp"] = payload["base_hp"] if payload["base_hp"] > 0 else 1.0
-        payload["base_atk"] = payload["base_atk"] if payload["base_atk"] > 0 else 1.0
-        payload["base_def"] = payload["base_def"] if payload["base_def"] > 0 else 1.0
-        json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        payload["base_hp"] = (
+            payload["base_hp"] if payload["base_hp"] > 0 else 1.0
+        )
+        payload["base_atk"] = (
+            payload["base_atk"] if payload["base_atk"] > 0 else 1.0
+        )
+        payload["base_def"] = (
+            payload["base_def"] if payload["base_def"] > 0 else 1.0
+        )
+        json_path.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
 
 def test_config_loader_reads_real_repo_v1_data(tmp_path, monkeypatch):
@@ -43,7 +51,9 @@ def test_config_loader_reads_real_repo_v1_data(tmp_path, monkeypatch):
     lc_v1 = loader.get_light_cone("in_the_night", version="v1.0")
     assert lc_v1 is not None
     assert lc_v1["config"].name == "in_the_night"
-    assert lc_v1["script"] == "configs.v1.0.light_cones.in_the_night.in_the_night"
+    assert (
+        lc_v1["script"] == "configs.v1.0.light_cones.in_the_night.in_the_night"
+    )
 
     relic_v1 = loader.get_relic_set("genius_of_brilliant_stars", version="v1.0")
     assert relic_v1 is not None
