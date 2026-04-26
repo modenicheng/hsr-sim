@@ -1,4 +1,4 @@
-"""BattleScreen — main TUI battle view composing all battle widgets."""
+"""BattleScreen -- main TUI battle view composing all battle widgets."""
 
 from __future__ import annotations
 
@@ -8,8 +8,21 @@ from textual.app import ComposeResult
 from textual.containers import Center, Container, Grid, Horizontal
 from textual.message import Message
 from textual.screen import Screen
-from textual.widgets import Static
+from textual.widgets import RichLog, Static
 
+import time
+
+from ..battle_controller import BattleController, BattleSnapshot
+from hsr_sim.ecs.components import (
+    AttackComponent,
+    CharacterStatusComponent,
+    CritDamageComponent,
+    CritRateComponent,
+    DefenseComponent,
+    HealthComponent,
+    SpeedComponent,
+    StandardEnergyComponent,
+)
 from ..widgets.action_bar import ActionBarWidget
 from ..widgets.action_buffer import ActionBufferWidget
 from ..widgets.boss_widget import BossWidget
@@ -27,6 +40,7 @@ from ..widgets.turn_spinner import TurnSpinnerWidget
 
 _MAX_ENEMIES = 5
 _MAX_CHARS = 4
+_ENEMY_ADVANCE_DELAY = 0.7
 
 
 class CompactButton(Static):
@@ -60,15 +74,14 @@ class CompactButton(Static):
             self.button = button
 
 
-class BattleScreen(Screen):
+class BattleScreen(Screen[None]):
     """Main battle screen.
 
     Layout:
-        #boss-section     (auto, hidden by default) — BOSS HP area
+        #boss-section     (auto, hidden by default) -- BOSS HP area
         #body             (1fr, grid: 22 | 1fr)
-          #action-column  (22) — action bar + status buttons below
-          #main-area      (1fr) — top enemy-parent / middle selectors /
-                                bottom ally-parent
+          #action-column  (22) -- action bar + status buttons below
+          #main-area      (1fr) -- enemy / selector / ally / log
     """
 
     DEFAULT_CSS = """
@@ -160,7 +173,7 @@ class BattleScreen(Screen):
 
     #selector-e {
         width: 100%;
-        height: 2;
+        height: 1;
     }
 
     #selector-e > Static {
@@ -220,20 +233,44 @@ class BattleScreen(Screen):
     #char-panel > CharacterWidget {
         width: 100%;
     }
+
+    #battle-log {
+        width: 100%;
+        height: auto;
+        max-height: 8;
+        border-top: solid $surface;
+    }
+
+    #battle-log RichLog {
+        width: 100%;
+        height: auto;
+        max-height: 8;
+        min-height: 1;
+    }
+
+    #battle-over-panel {
+        background: $panel;
+        color: $text;
+        padding: 1 3;
+        width: auto;
+        height: auto;
+        dock: top;
+        layer: overlay;
+    }
     """
 
     BINDINGS = [
-        ("escape", "quit_battle", "退出战斗"),
-        ("q", "quit_battle", "退出"),
-        ("c", "show_char_status", "角色状态"),
-        ("e", "show_enemy_status", "敌方状态"),
-        ("left", "cursor_left", "←"),
-        ("right", "cursor_right", "→"),
-        ("1", "select_target(1)", "目标1"),
-        ("2", "select_target(2)", "目标2"),
-        ("3", "select_target(3)", "目标3"),
-        ("4", "select_target(4)", "目标4"),
-        ("5", "select_target(5)", "目标5"),
+        ("escape", "maybe_quit", ""),
+        ("q", "basic_attack", "普攻"),
+        ("e", "skill", "战技"),
+        ("a", "cursor_left", "←"),
+        ("d", "cursor_right", "→"),
+        ("c", "show_char_status", "角色"),
+        ("z", "show_enemy_status", "敌方"),
+        ("1", "ultimate(1)", "终1"),
+        ("2", "ultimate(2)", "终2"),
+        ("3", "ultimate(3)", "终3"),
+        ("4", "ultimate(4)", "终4"),
     ]
 
     class TargetSelected(Message):
@@ -280,17 +317,19 @@ class BattleScreen(Screen):
                     with Horizontal(id="ally-row"):
                         with Grid(id="char-panel"):
                             for i in range(1, _MAX_CHARS + 1):
-                                yield CharacterWidget(
-                                    id=f"char-{i}"
-                                )
+                                yield CharacterWidget(id=f"char-{i}")
                         with Container(id="sp-column"):
                             yield SkillPointWidget(id="sp-widget")
                             yield TurnSpinnerWidget(
                                 id="turn-spinner", is_player_turn=True
                             )
+                with Container(id="battle-log"):
+                    yield RichLog(id="log", highlight=True, markup=True)
 
     def on_mount(self) -> None:
         self._selector = TargetSelector()
+        self._battle_over_shown = False
+        self._last_esc_press: float | None = None
 
         # Ensure grid+selector containers have correct layout properties.
         cols5 = "1fr 1fr 1fr 1fr 1fr"
@@ -307,10 +346,47 @@ class BattleScreen(Screen):
             "grid-size: 4; grid-columns: 1fr 1fr 1fr 1fr;"
         )
 
-        self._setup_demo_state()
-        self._refresh_arrows()
+        self._controller = BattleController(version="v1.0")
+        snapshot = self._controller.start_battle()
+        self._refresh_from_snapshot(snapshot)
 
-    # ── Public update API ───────────────────────────
+        if not snapshot.is_battle_over:
+            self._handle_snapshot_flow(snapshot)
+
+    # ── Message handlers ────────────────────────────
+
+    def on_battle_screen_target_selected(
+        self, event: BattleScreen.TargetSelected
+    ) -> None:
+        if self._controller is None:
+            return
+        if self._battle_over_shown or not self._controller._has_enemies_alive():
+            return
+
+        target_id = event.target_id
+
+        snapshot = self._controller.player_basic_attack(target_id)
+        self._refresh_from_snapshot(snapshot)
+
+        if snapshot.is_battle_over:
+            self._show_battle_over(snapshot)
+            return
+
+        self._handle_snapshot_flow(snapshot)
+
+    def on_battle_screen_quit_battle(
+        self, event: BattleScreen.QuitBattle
+    ) -> None:
+        self._cleanup()
+
+    def on_compact_button_pressed(self, event: CompactButton.Pressed) -> None:
+        bid = event.button.id or ""
+        if bid == "btn-char-status":
+            self.action_show_char_status()
+        elif bid == "btn-enemy-status":
+            self.action_show_enemy_status()
+
+    # ── Public update API (used by _refresh_from_snapshot) ─
 
     def toggle_boss_section(self) -> None:
         section = self.query_one("#boss-section")
@@ -347,7 +423,6 @@ class BattleScreen(Screen):
         )
 
     def update_enemies(self, enemies: list[dict]) -> None:
-        """Update enemy widgets from list of dicts."""
         grid = self.query_one("#enemy-grid", Grid)
         existing = list(grid.query(EnemyWidget))
         n = len(enemies)
@@ -375,7 +450,6 @@ class BattleScreen(Screen):
             )
 
         self._resize_enemy_grid(n)
-        self._refresh_arrows()
 
     def update_characters(self, characters: list[dict]) -> None:
         for i in range(1, _MAX_CHARS + 1):
@@ -383,7 +457,7 @@ class BattleScreen(Screen):
             if i <= len(characters):
                 data = characters[i - 1]
                 w.update_state(
-                    name=data.get("name", f"角色{i}"),
+                    name=data.get("name", ""),
                     hp=data.get("hp", 0),
                     max_hp=data.get("max_hp", 100),
                     shield=data.get("shield", 0),
@@ -414,21 +488,10 @@ class BattleScreen(Screen):
         current: int | None = None,
         max_sp: int | None = None,
     ) -> None:
-        """Update skill point display.
-
-        Args:
-            current: Current skill points (0..max_sp).
-            max_sp: Maximum skill points (0..12).
-        """
         w = self.query_one("#sp-widget", SkillPointWidget)
         w.update_sp(current=current, max_sp=max_sp)
 
     def update_turn_spinner(self, is_player_turn: bool) -> None:
-        """Set turn spinner active (player turn) or dimmed (enemy turn).
-
-        Args:
-            is_player_turn: True to show animated spinner, False to dim.
-        """
         w = self.query_one("#turn-spinner", TurnSpinnerWidget)
         w.set_player_turn(is_player_turn)
 
@@ -453,13 +516,70 @@ class BattleScreen(Screen):
         self._selector.update_targets(targets, primary_id, rule)
         self._refresh_arrows()
 
-    def get_selector(self) -> TargetSelector:
-        return self._selector
-
     # ── Actions / Bindings ──────────────────────────
 
-    def action_quit_battle(self) -> None:
-        self.post_message(self.QuitBattle())
+    def action_maybe_quit(self) -> None:
+        """Escape: once=notify, double-press (1.5s) = quit."""
+        now = time.monotonic()
+        if self._last_esc_press is not None and (now - self._last_esc_press) < 1.5:
+            self._cleanup()
+        else:
+            self._last_esc_press = now
+            self.notify("再按 Esc 退出战斗", title="提示")
+
+    def action_basic_attack(self) -> None:
+        """Q: basic attack on current cursor target."""
+        if self._controller is None or self._battle_over_shown:
+            return
+        if not self._controller._is_seele_turn():
+            self.notify("等待我方回合", title="提示")
+            return
+        target = self._selector.get_primary()
+        if target is None:
+            self.notify("无有效目标", title="提示")
+            return
+        snapshot = self._controller.player_basic_attack(target)
+        self._refresh_from_snapshot(snapshot)
+        if snapshot.is_battle_over:
+            self._show_battle_over(snapshot)
+        else:
+            self._handle_snapshot_flow(snapshot)
+
+    def action_skill(self) -> None:
+        """E: skill on current cursor target (costs SP)."""
+        if self._controller is None or self._battle_over_shown:
+            return
+        if not self._controller._is_seele_turn():
+            self.notify("等待我方回合", title="提示")
+            return
+        target = self._selector.get_primary()
+        if target is None:
+            self.notify("无有效目标", title="提示")
+            return
+        snapshot = self._controller.player_skill(target)
+        self._refresh_from_snapshot(snapshot)
+        if snapshot.is_battle_over:
+            self._show_battle_over(snapshot)
+        else:
+            self._handle_snapshot_flow(snapshot)
+
+    def action_ultimate(self, index: int) -> None:
+        """1-4: fire ultimate for character N (1=Seele)."""
+        if self._controller is None or self._battle_over_shown:
+            return
+        if index != 1:
+            self.notify(f"角色 {index} 未上阵", title="提示")
+            return
+        if not self._controller.can_ultimate():
+            self.notify("能量不足", title="提示")
+            return
+        target = self._selector.get_primary()
+        snapshot = self._controller.try_fire_ultimate(target)
+        self._refresh_from_snapshot(snapshot)
+        if snapshot.is_battle_over:
+            self._show_battle_over(snapshot)
+        else:
+            self._handle_snapshot_flow(snapshot)
 
     def action_cursor_left(self) -> None:
         self._selector.move_cursor(-1)
@@ -470,29 +590,149 @@ class BattleScreen(Screen):
         self._refresh_arrows()
 
     def action_show_char_status(self) -> None:
-        data = {"角色状态": "开发中", "按 c 键或点击按钮查看详情": ""}
-        self.app.push_screen(StatusDialog("角色详情", data))
+        if self._controller is None:
+            return
+        seele = self._controller.seele_id
+        if seele:
+            self._show_entity_status(seele)
 
     def action_show_enemy_status(self) -> None:
-        data = {"敌方状态": "开发中", "按 e 键或点击按钮查看详情": ""}
-        self.app.push_screen(StatusDialog("敌方详情", data))
+        if self._controller is None:
+            return
+        for eid in self._controller.enemy_ids:
+            if self._controller._is_alive(eid):
+                self._show_entity_status(eid)
+                return
 
-    def action_select_target(self, index: int) -> None:
-        targets = self._selector.targets
-        idx = index - 1
-        if 0 <= idx < len(targets):
-            self.post_message(
-                self.TargetSelected(targets[idx].entity_id)
+    # ── Private: snapshot / flow ────────────────────
+
+    def _refresh_from_snapshot(self, snapshot: BattleSnapshot) -> None:
+        """Update all widgets from a battle snapshot."""
+        self.update_characters(snapshot.characters)
+        self.update_enemies(snapshot.enemies)
+        self.update_skill_points(
+            current=snapshot.skill_point_current,
+            max_sp=snapshot.skill_point_max,
+        )
+        self.update_turn_spinner(snapshot.is_player_turn)
+        self.update_action_bar(
+            snapshot.action_bar_entries,
+            snapshot.current_actor_id,
+        )
+
+        for style, msg in snapshot.log_messages:
+            self.query_one("#log", RichLog).write(
+                Text.from_markup(f"[{style}]{msg}[/]")
             )
 
-    def on_compact_button_pressed(
-        self, event: CompactButton.Pressed
-    ) -> None:
-        bid = event.button.id or ""
-        if bid == "btn-char-status":
-            self.action_show_char_status()
-        elif bid == "btn-enemy-status":
-            self.action_show_enemy_status()
+        # Set up selectors AFTER grid resize is applied.
+        # Defer via call_after_refresh so Textual lays out the grid first.
+        if snapshot.needs_input and not snapshot.is_battle_over:
+            self.call_after_refresh(
+                self._enable_target_selection, snapshot
+            )
+        else:
+            self.call_after_refresh(self._clear_selectors)
+
+    def _handle_snapshot_flow(self, snapshot: BattleSnapshot) -> None:
+        """Decide what to do after a turn: wait for input or auto-advance."""
+        if snapshot.is_battle_over:
+            self._show_battle_over(snapshot)
+            return
+
+        if not snapshot.needs_input:
+            self._schedule_enemy_turn()
+
+    def _enable_target_selection(self, snapshot: BattleSnapshot) -> None:
+        """Set up target selector for player's turn."""
+        alive_targets = [t for t in snapshot.enemy_targets if t.is_alive]
+        if not alive_targets:
+            return
+
+        self.setup_target_selector(
+            targets=alive_targets,
+            primary_id=alive_targets[0].entity_id,
+            rule=SingleTargetRule(),
+        )
+
+    def _clear_selectors(self) -> None:
+        """Hide both enemy and ally selector arrows."""
+        self._selector.update_targets([], None)
+        self._refresh_arrows()
+
+    def _schedule_enemy_turn(self) -> None:
+        """Schedule auto-advance for enemy's turn."""
+        self.set_timer(_ENEMY_ADVANCE_DELAY, self._process_enemy_turn)
+
+    def _process_enemy_turn(self) -> None:
+        """Execute enemy's turn and continue the flow."""
+        if self._controller is None or self._battle_over_shown:
+            return
+
+        snapshot = self._controller.advance_enemy_turn()
+        self._refresh_from_snapshot(snapshot)
+        self._handle_snapshot_flow(snapshot)
+
+    def _show_battle_over(self, snapshot: BattleSnapshot) -> None:
+        """Display battle over panel."""
+        if self._battle_over_shown:
+            return
+        self._battle_over_shown = True
+        self._selector.update_targets([], None)
+
+        if snapshot.victory:
+            msg = "[bold green]*** Victory! ***[/]"
+        else:
+            msg = "[bold red]*** Seele defeated... ***[/]"
+
+        self.query_one("#log", RichLog).write(msg)
+        self.notify(
+            "双击 Esc 返回主菜单",
+            title="战斗胜利" if snapshot.victory else "战斗失败",
+        )
+
+    def _show_entity_status(self, entity_id: int) -> None:
+        """Show entity stats in a modal dialog."""
+        import esper
+
+        hp = esper.try_component(entity_id, HealthComponent)
+        atk = esper.try_component(entity_id, AttackComponent)
+        dfn = esper.try_component(entity_id, DefenseComponent)
+        spd = esper.try_component(entity_id, SpeedComponent)
+        en = esper.try_component(entity_id, StandardEnergyComponent)
+        cr = esper.try_component(entity_id, CritRateComponent)
+        cd = esper.try_component(entity_id, CritDamageComponent)
+        st = esper.try_component(entity_id, CharacterStatusComponent)
+
+        data = {}
+        if hp:
+            data["HP"] = f"{hp.value:.0f}/{hp.max_value:.0f}"
+        if atk:
+            data["ATK"] = f"{atk.value:.1f}"
+        if dfn:
+            data["DEF"] = f"{dfn.value:.1f}"
+        if spd:
+            data["SPD"] = f"{spd.final_speed:.1f}"
+        if en:
+            data["Energy"] = f"{en.energy:.0f}/{en.max_energy:.0f}"
+        if cr:
+            data["Crit Rate"] = f"{cr.value * 100:.1f}%"
+        if cd:
+            data["Crit DMG"] = f"{cd.value * 100:.1f}%"
+        if st:
+            data["Status"] = st.status.value
+
+        if self._controller is None:
+            return
+        self.app.push_screen(
+            StatusDialog(self._controller._entity_label(entity_id), data)
+        )
+
+    def _cleanup(self) -> None:
+        if self._controller is not None:
+            self._controller.cleanup()
+            self._controller = None
+        self.app.pop_screen()
 
     # ── Arrow rendering ─────────────────────────────
 
@@ -511,18 +751,11 @@ class BattleScreen(Screen):
         for i in range(_MAX_CHARS):
             w = self.query_one(f"#sel-a-{i}", Static)
             if i < len(allies):
-                ally = allies[i]
-                if ally.symbol:
-                    w.update(_arrow_text(ally))
-                else:
-                    w.update(
-                        Text("▽", style=Style(color="grey50"))
-                    )
+                w.update(_arrow_text(allies[i]))
             else:
-                w.update(Text("▽", style=Style(color="grey50")))
+                w.update(Text(""))
 
     def _resize_enemy_grid(self, count: int) -> None:
-        """Update grid-size and grid-columns for #enemy-grid and #selector-e."""
         n = max(1, count)
         cols = " ".join(["1fr"] * n)
         style_spec = f"grid-size: {n}; grid-columns: {cols};"
@@ -532,160 +765,6 @@ class BattleScreen(Screen):
 
         enemy_grid = self.query_one("#enemy-grid")
         enemy_grid.set_styles(style_spec)
-
-    # ── Demo ────────────────────────────────────────
-
-    def _setup_demo_state(self) -> None:
-        self.update_boss(
-            name="BOSS",
-            hp=80000,
-            max_hp=100000,
-            toughness=60,
-            max_toughness=80,
-            toughness_locked=False,
-            weakness_types=["fire", "physical", "imaginary"],
-            weakness_disabled=False,
-            buffs=[("攻击强化", 2)],
-            special_stacks="[复仇 3/5]",
-        )
-        self.update_enemies(
-            [
-                {
-                    "name": "Enemy1",
-                    "hp": 30000,
-                    "max_hp": 40000,
-                    "toughness": 3,
-                    "max_toughness": 5,
-                    "toughness_locked": False,
-                    "weakness_types": ["physical"],
-                    "weakness_disabled": False,
-                },
-                {
-                    "name": "Enemy2",
-                    "hp": 15000,
-                    "max_hp": 40000,
-                    "toughness": 1,
-                    "max_toughness": 4,
-                    "toughness_locked": False,
-                    "weakness_types": ["fire", "ice"],
-                    "weakness_disabled": False,
-                },
-                {
-                    "name": "Enemy3",
-                    "hp": 40000,
-                    "max_hp": 40000,
-                    "toughness": 5,
-                    "max_toughness": 5,
-                    "toughness_locked": True,
-                    "weakness_types": ["lightning"],
-                    "weakness_disabled": True,
-                },
-                {
-                    "name": "Enemy4",
-                    "hp": 8000,
-                    "max_hp": 40000,
-                    "toughness": 0,
-                    "max_toughness": 4,
-                    "toughness_locked": False,
-                    "weakness_types": ["wind", "quantum"],
-                    "weakness_disabled": False,
-                },
-                {
-                    "name": "Enemy5",
-                    "hp": 20000,
-                    "max_hp": 40000,
-                    "toughness": 2,
-                    "max_toughness": 3,
-                    "toughness_locked": False,
-                    "weakness_types": ["imaginary"],
-                    "weakness_disabled": False,
-                },
-            ]
-        )
-        self.update_characters(
-            [
-                {
-                    "name": "Seele",
-                    "hp": 8500,
-                    "max_hp": 10000,
-                    "shield": 2000,
-                    "energy": 95,
-                    "max_energy": 120,
-                    "stacks": [("seele_spd", 1, 2)],
-                    "buffs": [("SPD+", 1)],
-                    "is_current_actor": True,
-                    "is_alive": True,
-                },
-                {
-                    "name": "Bronya",
-                    "hp": 12000,
-                    "max_hp": 15000,
-                    "shield": 0,
-                    "energy": 60,
-                    "max_energy": 120,
-                    "stacks": [],
-                    "buffs": [],
-                    "is_current_actor": False,
-                    "is_alive": True,
-                },
-                {
-                    "name": "Tingyun",
-                    "hp": 3000,
-                    "max_hp": 8000,
-                    "shield": 5000,
-                    "energy": 110,
-                    "max_energy": 130,
-                    "stacks": [],
-                    "buffs": [("ATK+", 1)],
-                    "is_current_actor": False,
-                    "is_alive": True,
-                },
-                {
-                    "name": "Luocha",
-                    "hp": 0,
-                    "max_hp": 12000,
-                    "shield": 0,
-                    "energy": 0,
-                    "max_energy": 100,
-                    "stacks": [],
-                    "buffs": [],
-                    "is_current_actor": False,
-                    "is_alive": False,
-                },
-            ]
-        )
-        self.update_skill_points(current=3, max_sp=5)
-        self.update_action_bar(
-            entries=[
-                (101, "Enemy1", 75.0, 133.0, True),
-                (102, "Seele", 78.0, 149.0, False),
-                (103, "Enemy2", 80.0, 125.0, True),
-                (104, "Bronya", 90.0, 140.0, False),
-                (105, "Enemy3", 95.0, 105.0, True),
-                (106, "Tingyun", 100.0, 112.0, False),
-                (107, "Enemy4", 105.0, 95.0, True),
-                (108, "Enemy5", 110.0, 91.0, True),
-            ],
-            current_actor=102,
-        )
-
-        enemy_targets = [
-            TargetInfo(
-                entity_id=201 + i, label=f"Enemy{i + 1}", is_enemy=True
-            )
-            for i in range(5)
-        ]
-        char_targets = [
-            TargetInfo(
-                entity_id=301 + i, label=f"Char{i + 1}", is_enemy=False
-            )
-            for i in range(4)
-        ]
-        self.setup_target_selector(
-            targets=enemy_targets + char_targets,
-            primary_id=201,
-            rule=SingleTargetRule(),
-        )
 
 
 def _arrow_text(state: ArrowState) -> Text:

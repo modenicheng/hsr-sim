@@ -183,16 +183,21 @@ class CharacterWidget(Container):
         left_w = self.query_one(".stats-left", Static)
         left_text = Text()
         if self._stacks:
-            s_text = " ".join(f"[{stype}:{current}/{max_s}]"
-                              for stype, current, max_s in self._stacks)
+            s_text = " ".join(
+                f"[{stype}:{current}/{max_s}]"
+                for stype, current, max_s in self._stacks
+            )
             left_text.append(s_text, style=Style(color="yellow"))
         left_w.update(left_text)
 
         ENERGY_KEY_MAP = {1: "¹", 2: "²", 3: "³", 4: "⁴"}
 
         right_w = self.query_one(".stats-right", Static)
-        key_hint = ENERGY_KEY_MAP.get(
-            self._energy_key) if 1 <= self._energy_key <= 4 else ""
+        key_hint = (
+            ENERGY_KEY_MAP.get(self._energy_key)
+            if 1 <= self._energy_key <= 4
+            else ""
+        )
         right_text = Text()
         right_text.append(
             f"[{self._energy:.0f}/{self._max_energy:.0f}]",
@@ -212,8 +217,9 @@ class CharacterWidget(Container):
                     parts.append(f"[{bname} x{bstacks}]")
                 else:
                     parts.append(f"[{bname}]")
-            bottom_left_text.append(" ".join(parts),
-                                    style=Style(color="#87CEEB"))
+            bottom_left_text.append(
+                " ".join(parts), style=Style(color="#87CEEB")
+            )
         bottom_left.update(bottom_left_text)
 
         bottom_right = self.query_one(".bottom-right", Static)

@@ -3,9 +3,14 @@ from __future__ import annotations
 from rich.text import Text
 from rich.style import Style
 from textual.containers import Container, Horizontal
+from textual.timer import Timer
 from textual.widgets import Static
 
 from .weakness_display import ELEMENT_COLORS, ELEMENT_SHORT
+
+_FLASH_DELAY = 0.2
+_DECAY_INTERVAL = 0.04
+_DECAY_STEPS = 5
 
 
 class EnemyWidget(Container):
@@ -102,8 +107,16 @@ class EnemyWidget(Container):
         self._buffs = buffs or []
         self._special_stacks = special_stacks
         self._bar_width = bar_width
-        self._prev_hp = hp
-        self._buffer_frames = 0
+
+        # ── Animation state ──
+        self._anim_state: str = "idle"  # idle | flash | decay
+        self._flash_type: str = "damage"  # damage | heal
+        self._total_flash: int = 0
+        self._target_fill: int = 0
+        self._decay_step: int = 0
+        self._anim_bar_w: int = 0
+        self._delay_timer: Timer | None = None
+        self._decay_timer: Timer | None = None
 
     def compose(self):
         yield Horizontal(
@@ -139,12 +152,10 @@ class EnemyWidget(Container):
         buffs: list[tuple[str, int]] | None = None,
         special_stacks: str | None = None,
     ) -> None:
+        old_hp = self._hp
         if name is not None:
             self._name = name
         if hp is not None:
-            if hp < self._hp:
-                self._buffer_frames = 3
-                self._prev_hp = self._hp
             self._hp = hp
         if max_hp is not None:
             self._max_hp = max_hp
@@ -162,54 +173,113 @@ class EnemyWidget(Container):
             self._buffs = buffs
         if special_stacks is not None:
             self._special_stacks = special_stacks
+
+        if hp is not None and hp != old_hp:
+            self._start_hp_animation(old_hp, hp)
+
         self._refresh_content()
+
+    # ── HP animation ────────────────────────────────
+
+    def _start_hp_animation(self, old_val: float, new_val: float) -> None:
+        self._stop_animation_timers()
+
+        bar_w = self._hp_bar_width()
+        self._anim_bar_w = bar_w
+        max_val = max(self._max_hp, 1.0)
+
+        old_fill = int(bar_w * max(0.0, old_val) / max_val)
+        new_fill = int(bar_w * max(0.0, new_val) / max_val)
+
+        delta = abs(new_fill - old_fill)
+        if delta <= 0:
+            self._anim_state = "idle"
+            return
+
+        self._target_fill = new_fill
+        self._total_flash = delta
+        self._decay_step = 0
+
+        if new_val < old_val:
+            self._flash_type = "damage"
+        else:
+            self._flash_type = "heal"
+
+        self._anim_state = "flash"
+        self._delay_timer = self.set_timer(
+            _FLASH_DELAY, self._on_delay_done
+        )
+
+    def _on_delay_done(self) -> None:
+        self._anim_state = "decay"
+        self._decay_timer = self.set_interval(
+            _DECAY_INTERVAL, self._on_decay_tick
+        )
+
+    def _on_decay_tick(self) -> None:
+        self._decay_step += 1
+        self._refresh_content()
+        if self._decay_step >= _DECAY_STEPS:
+            self._anim_state = "idle"
+            if self._decay_timer:
+                self._decay_timer.stop()
+                self._decay_timer = None
+
+    def _stop_animation_timers(self) -> None:
+        if self._delay_timer is not None:
+            self._delay_timer.stop()
+            self._delay_timer = None
+        if self._decay_timer is not None:
+            self._decay_timer.stop()
+            self._decay_timer = None
+
+    def _hp_bar_width(self) -> int:
+        total_w = (
+            self.size.width if self.size.width > 0 else self._bar_width + 4
+        )
+        return max(4, total_w - 7)
 
     # ── Content refresh ───────────────────────────────
 
     def _refresh_content(self) -> None:
-        total_w = self.size.width if self.size.width > 0 else self._bar_width + 4
-        total_w = max(10, total_w)
-
-        # Line 0: name + weakness (CSS right-aligns the weakness)
+        # Line 0: name + weakness
         name_text = Text()
-        name_text.append(
-            f"[{self._name}]", style=Style(bold=True, color="red")
-        )
+        name_text.append(f"[{self._name}]", style=Style(bold=True, color="red"))
         self.query_one(".enemy-name", Static).update(name_text)
         self.query_one(".enemy-weakness", Static).update(
             self._build_weakness_text()
         )
 
         # Line 1: toughness bar
+        total_w = (
+            self.size.width if self.size.width > 0 else self._bar_width + 4
+        )
         self.query_one(".enemy-toughness", Static).update(
             self._build_toughness_text(total_w)
         )
 
         # Line 2: HP bar + percentage
-        bar_text, pct_text = self._build_hp_texts(total_w)
+        bar_text, pct_text = self._build_hp_texts()
         self.query_one(".enemy-hp-bar", Static).update(bar_text)
         self.query_one(".enemy-hp-pct", Static).update(pct_text)
 
-        # Bottom row: buffs + special stacks
+        # Bottom row
         self._refresh_bottom(total_w)
 
     # ── Weakness ─────────────────────────────────────
 
     def _build_weakness_text(self) -> Text:
-        """Build colored weakness element symbols (no brackets)."""
         text = Text()
         if not self._weakness_types:
             return text
-        for i, w in enumerate(self._weakness_types):
+        for w in self._weakness_types:
             short = ELEMENT_SHORT.get(w, w[:1])
             if self._weakness_disabled:
                 text.append(short, style=Style(color="grey42"))
             else:
                 text.append(
                     short,
-                    style=Style(
-                        color=ELEMENT_COLORS.get(w, "#FFF"), bold=True
-                    ),
+                    style=Style(color=ELEMENT_COLORS.get(w, "#FFF"), bold=True),
                 )
         return text
 
@@ -223,9 +293,7 @@ class EnemyWidget(Container):
                 total_w,
             )
             t_empty = total_w - t_fill
-            tough_color = (
-                "grey42" if self._toughness_locked else "white"
-            )
+            tough_color = "grey42" if self._toughness_locked else "white"
             result.append("=" * t_fill, style=Style(color=tough_color))
             result.append("-" * t_empty, style=Style(color="grey42"))
         else:
@@ -234,49 +302,59 @@ class EnemyWidget(Container):
 
     # ── HP bar ───────────────────────────────────────
 
-    def _build_hp_texts(self, total_w: int) -> tuple[Text, Text]:
-        """Return (bar_text, pct_text) for the HP row."""
+    def _build_hp_texts(self) -> tuple[Text, Text]:
         max_val = max(self._max_hp, 1.0)
         safe_val = max(0.0, self._hp)
-        # Reserve ~6 cells for "[100%]" percentage suffix
-        bar_w = max(4, total_w - 7)
 
+        bar_w = self._hp_bar_width()
         hp_fill = min(int(bar_w * safe_val / max_val), bar_w)
-        hp_empty = bar_w - hp_fill
 
-        bar_text = Text()
-        if self._buffer_frames > 0 and self._prev_hp > self._hp:
-            lost = int(
-                bar_w
-                * min(self._prev_hp - self._hp, max_val)
-                / max_val
-            )
-            flash_width = min(max(0, lost), bar_w - hp_fill)
-            bar_text.append(
-                "=" * hp_fill, style=Style(color="red")
-            )
-            bar_text.append(
-                "=" * flash_width, style=Style(color="white")
-            )
-            bar_text.append(
-                "-" * (bar_w - hp_fill - flash_width),
-                style=Style(color="grey42"),
-            )
-            self._buffer_frames -= 1
-        else:
-            bar_text.append(
-                "=" * hp_fill, style=Style(color="red")
-            )
-            bar_text.append(
-                "-" * hp_empty, style=Style(color="grey42")
-            )
+        if self._anim_state == "idle":
+            bar_text = self._render_hp_normal(hp_fill, bar_w)
+        elif self._anim_state == "flash":
+            bar_text = self._render_hp_anim(hp_fill, bar_w, progress=0.0)
+        else:  # decay
+            progress = min(1.0, self._decay_step / _DECAY_STEPS)
+            bar_text = self._render_hp_anim(hp_fill, bar_w, progress)
 
         pct = safe_val / max_val * 100
-        pct_text = Text(
-            f"[{pct:.0f}%]", style=Style(color="white")
-        )
+        pct_text = Text(f"[{pct:.0f}%]", style=Style(color="white"))
 
         return bar_text, pct_text
+
+    def _render_hp_normal(self, hp_fill: int, bar_w: int) -> Text:
+        empty = bar_w - hp_fill
+        text = Text()
+        text.append("=" * hp_fill, style=Style(color="red"))
+        text.append("-" * max(0, empty), style=Style(color="grey42"))
+        return text
+
+    def _render_hp_anim(
+        self, hp_fill: int, bar_w: int, progress: float
+    ) -> Text:
+        flash_visible = int(self._total_flash * (1.0 - progress))
+        text = Text()
+
+        if self._flash_type == "damage":
+            colored = hp_fill
+            empty = bar_w - colored - flash_visible
+            text.append("=" * max(0, colored), style=Style(color="red"))
+            text.append(
+                "=" * max(0, flash_visible), style=Style(color="white")
+            )
+            text.append("-" * max(0, empty), style=Style(color="grey42"))
+        else:  # heal
+            base = hp_fill - self._total_flash
+            filled = int(self._total_flash * progress)
+            colored = max(0, base) + filled
+            empty = bar_w - colored - flash_visible
+            text.append("=" * max(0, colored), style=Style(color="red"))
+            text.append(
+                "=" * max(0, flash_visible), style=Style(color="green")
+            )
+            text.append("-" * max(0, empty), style=Style(color="grey42"))
+
+        return text
 
     # ── Bottom row (buffs / special stacks) ──────────
 
@@ -286,8 +364,7 @@ class EnemyWidget(Container):
 
         if self._buffs:
             buff_text = " ".join(
-                f"[{n} x{s}]" if s > 1 else f"[{n}]"
-                for n, s in self._buffs
+                f"[{n} x{s}]" if s > 1 else f"[{n}]" for n, s in self._buffs
             )
             left_info.append(buff_text, style=Style(color="#87CEEB"))
 

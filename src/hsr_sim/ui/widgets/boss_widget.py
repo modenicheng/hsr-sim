@@ -3,11 +3,15 @@ from __future__ import annotations
 from rich.text import Text
 from rich.style import Style
 from textual.containers import Container, Horizontal
+from textual.timer import Timer
 from textual.widgets import Static
 
 from .weakness_display import ELEMENT_COLORS, ELEMENT_SHORT
 
 _BAR_SEGMENT = 80
+_FLASH_DELAY = 0.2
+_DECAY_INTERVAL = 0.04
+_DECAY_STEPS = 5
 
 
 class BossWidget(Container):
@@ -88,8 +92,14 @@ class BossWidget(Container):
         self._weakness_disabled = weakness_disabled
         self._buffs = buffs or []
         self._special_stacks = special_stacks
-        self._prev_hp = hp
-        self._buffer_frames = 0
+
+        # ── Animation state ──
+        self._anim_state: str = "idle"  # idle | flash | decay
+        self._flash_type: str = "damage"  # damage | heal
+        self._total_flash: int = 0
+        self._decay_step: int = 0
+        self._delay_timer: Timer | None = None
+        self._decay_timer: Timer | None = None
 
     def compose(self):
         with Horizontal(id="boss-info"):
@@ -119,12 +129,10 @@ class BossWidget(Container):
         buffs: list[tuple[str, int]] | None = None,
         special_stacks: str | None = None,
     ) -> None:
+        old_hp = self._hp
         if name is not None:
             self._name = name
         if hp is not None:
-            if hp < self._hp:
-                self._buffer_frames = 3
-                self._prev_hp = self._hp
             self._hp = hp
         if max_hp is not None:
             self._max_hp = max_hp
@@ -142,7 +150,67 @@ class BossWidget(Container):
             self._buffs = buffs
         if special_stacks is not None:
             self._special_stacks = special_stacks
+
+        if hp is not None and hp != old_hp:
+            self._start_hp_animation(old_hp, hp)
+
         self._refresh_content()
+
+    # ── HP animation ────────────────────────────────
+
+    def _start_hp_animation(self, old_val: float, new_val: float) -> None:
+        self._stop_animation_timers()
+
+        max_val = max(self._max_hp, 1.0)
+        old_fill = min(
+            int(_BAR_SEGMENT * max(0.0, old_val) / max_val), _BAR_SEGMENT
+        )
+        new_fill = min(
+            int(_BAR_SEGMENT * max(0.0, new_val) / max_val), _BAR_SEGMENT
+        )
+
+        delta = abs(new_fill - old_fill)
+        if delta <= 0:
+            self._anim_state = "idle"
+            return
+
+        self._total_flash = delta
+        self._decay_step = 0
+
+        if new_val < old_val:
+            self._flash_type = "damage"
+        else:
+            self._flash_type = "heal"
+
+        self._anim_state = "flash"
+        self._delay_timer = self.set_timer(
+            _FLASH_DELAY, self._on_delay_done
+        )
+
+    def _on_delay_done(self) -> None:
+        self._anim_state = "decay"
+        self._decay_timer = self.set_interval(
+            _DECAY_INTERVAL, self._on_decay_tick
+        )
+
+    def _on_decay_tick(self) -> None:
+        self._decay_step += 1
+        self._refresh_hp_line()
+        if self._decay_step >= _DECAY_STEPS:
+            self._anim_state = "idle"
+            if self._decay_timer:
+                self._decay_timer.stop()
+                self._decay_timer = None
+
+    def _stop_animation_timers(self) -> None:
+        if self._delay_timer is not None:
+            self._delay_timer.stop()
+            self._delay_timer = None
+        if self._decay_timer is not None:
+            self._decay_timer.stop()
+            self._decay_timer = None
+
+    # ── Content refresh ─────────────────────────────
 
     def _refresh_content(self) -> None:
         # Line 1: name + toughness + weakness
@@ -153,9 +221,9 @@ class BossWidget(Container):
             tough_text = _build_bar(
                 self._toughness,
                 self._max_toughness,
-                filled_color="grey42"
-                if self._toughness_locked
-                else "white",
+                filled_color=(
+                    "grey42" if self._toughness_locked else "white"
+                ),
                 empty_color="grey42",
                 fill_char="=",
                 empty_char="-",
@@ -179,12 +247,9 @@ class BossWidget(Container):
         buffs_text = Text()
         if self._buffs:
             parts = [
-                f"[{n} x{s}]" if s > 1 else f"[{n}]"
-                for n, s in self._buffs
+                f"[{n} x{s}]" if s > 1 else f"[{n}]" for n, s in self._buffs
             ]
-            buffs_text.append(
-                " ".join(parts), style=Style(color="#87CEEB")
-            )
+            buffs_text.append(" ".join(parts), style=Style(color="#87CEEB"))
         self.query_one("#boss-buffs", Static).update(buffs_text)
 
         special = Text()
@@ -197,14 +262,8 @@ class BossWidget(Container):
     def _refresh_hp_line(self) -> None:
         safe_val = max(0.0, self._hp)
         max_val = max(self._max_hp, 1.0)
-        if self._buffer_frames > 0 and self._prev_hp > self._hp:
-            prev_safe = min(self._prev_hp, max_val)
-            hp_text = _build_damage_flash_bar(
-                safe_val, prev_safe, max_val, _BAR_SEGMENT
-            )
-            self._buffer_frames -= 1
-            self.set_timer(0.1, self._refresh_hp_line)
-        else:
+
+        if self._anim_state == "idle":
             hp_text = _build_bar(
                 safe_val,
                 max_val,
@@ -214,12 +273,28 @@ class BossWidget(Container):
                 empty_char="-",
                 segment=_BAR_SEGMENT,
             )
+        elif self._anim_state == "flash":
+            hp_text = _build_anim_bar(
+                safe_val, max_val, progress=0.0,
+                flash_type=self._flash_type,
+                total_flash=self._total_flash,
+            )
+        else:  # decay
+            progress = min(1.0, self._decay_step / _DECAY_STEPS)
+            hp_text = _build_anim_bar(
+                safe_val, max_val, progress=progress,
+                flash_type=self._flash_type,
+                total_flash=self._total_flash,
+            )
+
         self.query_one("#boss-hp", Static).update(hp_text)
 
         pct = safe_val / max_val * 100
         pct_text = Text(f"[{pct:.0f}%]", style=Style(color="white"))
         self.query_one("#boss-hp-pct", Static).update(pct_text)
 
+
+# ── Helper functions ───────────────────────────────────
 
 def _build_bar(
     value: float,
@@ -238,26 +313,47 @@ def _build_bar(
     return result
 
 
-def _build_damage_flash_bar(
+def _build_anim_bar(
     current: float,
-    previous: float,
     max_value: float,
-    segment: int = _BAR_SEGMENT,
+    progress: float,
+    flash_type: str,
+    total_flash: int,
 ) -> Text:
-    cur_fill = min(int(segment * current / max_value), segment)
-    lost = min(int(segment * (previous - current) / max_value), segment)
-    flash = min(lost, segment - cur_fill)
-    remaining = segment - cur_fill - flash
+    """Build animated HP bar with flash overlay.
+
+    progress: 0.0 (full flash) to 1.0 (no flash).
+    """
+    cur_fill = min(
+        int(_BAR_SEGMENT * current / max_value), _BAR_SEGMENT
+    )
+    flash_visible = int(total_flash * (1.0 - progress))
+
     result = Text()
-    result.append("=" * cur_fill, style=Style(color="red"))
-    result.append("=" * flash, style=Style(color="white"))
-    result.append("-" * remaining, style=Style(color="grey42"))
+
+    if flash_type == "damage":
+        colored = cur_fill
+        empty = _BAR_SEGMENT - colored - flash_visible
+        result.append("=" * max(0, colored), style=Style(color="red"))
+        result.append(
+            "=" * max(0, flash_visible), style=Style(color="white")
+        )
+        result.append("-" * max(0, empty), style=Style(color="grey42"))
+    else:  # heal
+        base = cur_fill - total_flash
+        filled = int(total_flash * progress)
+        colored = max(0, base) + filled
+        empty = _BAR_SEGMENT - colored - flash_visible
+        result.append("=" * max(0, colored), style=Style(color="red"))
+        result.append(
+            "=" * max(0, flash_visible), style=Style(color="green")
+        )
+        result.append("-" * max(0, empty), style=Style(color="grey42"))
+
     return result
 
 
-def _build_weakness(
-    types: list[str], disabled: bool = False
-) -> Text:
+def _build_weakness(types: list[str], disabled: bool = False) -> Text:
     result = Text()
     if not types:
         return result

@@ -6,8 +6,17 @@ from textual.widget import Widget
 
 _SPIN_CHARS = ["◢", "◣", "◤", "◥"]
 # _SPIN_CHARS = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃", "▂"]  # Alternative: smoother bar spinner
-_SPIN_CHARS = ["⣾", "⣷", "⣯", "⣟", "⡿", "⢿", "⣻", "⣽",
-               "⣾"]  # Alternative: circular spinner
+_SPIN_CHARS = [
+    "⣾",
+    "⣷",
+    "⣯",
+    "⣟",
+    "⡿",
+    "⢿",
+    "⣻",
+    "⣽",
+    "⣾",
+]  # Alternative: circular spinner
 
 
 # _SPIN_CHARS = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]  # Alternative: braille spinner
@@ -56,4 +65,7 @@ class TurnSpinnerWidget(Widget):
         char = _SPIN_CHARS[self._frame_idx]
         color = "cyan" if self._is_player_turn else "grey42"
         bold = self._is_player_turn
-        return Text(char + " 我方行动" if self._is_player_turn else "对方行动", style=Style(color=color, bold=bold))
+        return Text(
+            char + " 我方行动" if self._is_player_turn else "对方行动",
+            style=Style(color=color, bold=bold),
+        )

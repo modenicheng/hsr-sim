@@ -4,12 +4,21 @@ from rich.text import Text
 from rich.style import Style
 from textual.widget import Widget
 
+_FLASH_DELAY = 0.2
+_DECAY_INTERVAL = 0.04
+_DECAY_STEPS = 5
+
 
 class HpBarWidget(Widget):
-    """Two-layer HP bar.
+    """Two-layer HP bar with damage/heal animation.
 
-    Current HP (colored) + shield (white) + consumed (dim).
-    Upper layer: current HP; Lower layer: shield amount.
+    Upper layer: HP bar (colored + optional flash portion).
+    Lower layer: shield bar (white).
+
+    Animation phases:
+      flash (0.2s) -> decay (5 ticks over 0.2s) -> idle
+    Damage: lost portion turns white, then decays.
+    Heal:   gained portion turns green, then decays.
     """
 
     DEFAULT_CSS = """
@@ -41,8 +50,16 @@ class HpBarWidget(Widget):
         self.bar_width = bar_width
         self.prefix = prefix
         self.shield_indent = shield_indent
-        self._prev_value = value
-        self._buffer_frames = 0
+
+        # ── Animation state ──
+        self._anim_state: str = "idle"  # idle | flash | decay
+        self._flash_type: str = "damage"  # damage | heal
+        self._total_flash: int = 0
+        self._target_fill: int = 0
+        self._decay_step: int = 0
+        self._anim_bar_w: int = 0
+        self._delay_timer: object = None
+        self._decay_timer: object = None
 
     def update_hp(
         self,
@@ -50,22 +67,83 @@ class HpBarWidget(Widget):
         max_value: float | None = None,
         shield: float | None = None,
     ) -> None:
+        """Update HP value; triggers animation if HP changed."""
         if max_value is not None:
             self.max_value = max_value
         if shield is not None:
             self.shield = shield
-        if value < self.value:
-            self._buffer_frames = 3
-            self._prev_value = self.value
+
+        old = self.value
         self.value = value
+
+        if value != old:
+            self._start_animation(old, value)
+        else:
+            self.refresh()
+
+    # ── Animation ──────────────────────────────────
+
+    def _start_animation(self, old_val: float, new_val: float) -> None:
+        self._stop_timers()
+
+        max_val = max(self.max_value, 1.0)
+        bar_w = self._bar_width()
+        self._anim_bar_w = bar_w
+
+        old_fill = int(bar_w * max(0.0, old_val) / max_val)
+        new_fill = int(bar_w * max(0.0, new_val) / max_val)
+
+        delta = abs(new_fill - old_fill)
+        if delta <= 0:
+            self._anim_state = "idle"
+            self.refresh()
+            return
+
+        self._target_fill = new_fill
+        self._total_flash = delta
+        self._decay_step = 0
+
+        if new_val < old_val:
+            self._flash_type = "damage"
+        else:
+            self._flash_type = "heal"
+
+        self._anim_state = "flash"
         self.refresh()
+        self._delay_timer = self.set_timer(
+            _FLASH_DELAY, self._on_delay_done
+        )
+
+    def _on_delay_done(self) -> None:
+        self._anim_state = "decay"
+        self._decay_timer = self.set_interval(
+            _DECAY_INTERVAL, self._on_decay_tick
+        )
+
+    def _on_decay_tick(self) -> None:
+        self._decay_step += 1
+        self.refresh()
+        if self._decay_step >= _DECAY_STEPS:
+            self._anim_state = "idle"
+            if self._decay_timer:
+                self._decay_timer.stop()
+                self._decay_timer = None
+
+    def _stop_timers(self) -> None:
+        if self._delay_timer is not None:
+            self._delay_timer.stop()
+            self._delay_timer = None
+        if self._decay_timer is not None:
+            self._decay_timer.stop()
+            self._decay_timer = None
+
+    # ── Render ─────────────────────────────────────
 
     def render(self) -> Text:
         max_val = max(self.max_value, 1.0)
         safe_val = max(0.0, self.value)
         safe_shield = max(0.0, self.shield)
 
-        # Dynamic total width from widget, fallback to bar_width/default.
         total_w = self.size.width
         if total_w <= 0:
             total_w = self.bar_width if self.bar_width > 0 else 20
@@ -76,59 +154,21 @@ class HpBarWidget(Widget):
             pct_text = f"[{pct:.0f}%]"
         pct_suffix = f" {pct_text}" if pct_text else ""
 
-        # Reserve width for prefix and optional pct suffix.
         max_w = total_w - len(self.prefix) - len(pct_suffix)
         max_w = max(1, max_w)
 
-        # Upper line: prefix + HP bar
         hp_fill = min(int(max_w * safe_val / max_val), max_w)
-        hp_empty = max_w - hp_fill
+        bar_w = self._anim_bar_w if self._anim_state != "idle" else max_w
 
-        hp_line = Text()
-        if self.prefix:
-            hp_line.append(self.prefix, style=Style(color="white"))
-        hp_line.append("=" * hp_fill, style=Style(color=self.color))
-        hp_line.append("-" * hp_empty, style=Style(color="grey42"))
-
-        # Lower line: indent + shield bar
-        shield_width = min(int(max_w * safe_shield / max_val), max_w)
+        # Shield line (always rendered)
+        sw = min(int(max_w * safe_shield / max_val), max_w)
         shield_line = Text()
         if self.shield_indent > 0:
             shield_line.append(" " * self.shield_indent)
-        shield_line.append(
-            "=" * shield_width, style=Style(color="white")
-        )
+        shield_line.append("=" * sw, style=Style(color="white"))
 
-        # Buffer effect: flash white for damage taken
-        if self._buffer_frames > 0 and self._prev_value > self.value:
-            lost = int(
-                max_w
-                * min(self._prev_value - self.value, max_val)
-                / max_val
-            )
-            flash_start = max(0, hp_fill)
-            flash_end = min(flash_start + lost, max_w)
-            flash_width = flash_end - flash_start
-            if flash_width > 0:
-                new_hp = Text()
-                new_hp.append(
-                    "=" * flash_start, style=Style(color=self.color)
-                )
-                new_hp.append(
-                    "=" * flash_width, style=Style(color="white")
-                )
-                rem = max_w - flash_end
-                if rem > 0:
-                    new_hp.append(
-                        "-" * rem, style=Style(color="grey42")
-                    )
-                hp_line = Text()
-                if self.prefix:
-                    hp_line.append(
-                        self.prefix, style=Style(color="white")
-                    )
-                hp_line.append_text(new_hp)
-            self._buffer_frames -= 1
+        # HP line
+        hp_line = self._render_hp_line(hp_fill, bar_w, max_w)
 
         result = Text()
         result.append(hp_line)
@@ -137,3 +177,57 @@ class HpBarWidget(Widget):
         result.append("\n")
         result.append(shield_line)
         return result
+
+    def _render_hp_line(
+        self, hp_fill: int, bar_w: int, real_w: int
+    ) -> Text:
+        """Render the HP bar portion with optional animation overlay."""
+        line = Text()
+        if self.prefix:
+            line.append(self.prefix, style=Style(color="white"))
+
+        if self._anim_state == "idle":
+            colored = hp_fill
+            empty = real_w - colored
+            line.append("=" * colored, style=Style(color=self.color))
+            line.append("-" * max(0, empty), style=Style(color="grey42"))
+            return line
+
+        # Animation active — use saved bar_w for consistent flash scaling
+        progress = (
+            min(1.0, self._decay_step / _DECAY_STEPS)
+            if self._anim_state == "decay"
+            else 0.0
+        )
+        flash_visible = int(self._total_flash * (1.0 - progress))
+
+        if self._flash_type == "damage":
+            colored = int(bar_w * hp_fill / real_w) if real_w > 0 else 0
+            empty = real_w - colored - flash_visible
+            line.append("=" * max(0, colored), style=Style(color=self.color))
+            line.append("=" * max(0, flash_visible), style=Style(color="white"))
+            line.append("-" * max(0, empty), style=Style(color="grey42"))
+        else:  # heal
+            # Base = old fill; filled = portion already transitioned
+            base = hp_fill - self._total_flash
+            filled = int(self._total_flash * progress)
+            colored = max(0, base) + filled
+            empty = real_w - colored - flash_visible
+            line.append("=" * max(0, colored), style=Style(color=self.color))
+            line.append(
+                "=" * max(0, flash_visible), style=Style(color="green")
+            )
+            line.append("-" * max(0, empty), style=Style(color="grey42"))
+
+        return line
+
+    def _bar_width(self) -> int:
+        total_w = self.size.width
+        if total_w <= 0:
+            total_w = self.bar_width if self.bar_width > 0 else 20
+        pct_text = ""
+        if self.show_percent:
+            pct = max(0.0, self.value) / max(self.max_value, 1.0) * 100
+            pct_text = f"[{pct:.0f}%]"
+        pct_suffix = f" {pct_text}" if pct_text else ""
+        return max(1, total_w - len(self.prefix) - len(pct_suffix))

@@ -86,9 +86,7 @@ class SkillPointWidget(Widget):
             overflow_count = total - PER_LINE
             for i in range(overflow_count):
                 slot_idx = PER_LINE + i
-                symbol = (
-                    FILLED if slot_idx < current else EMPTY
-                )
+                symbol = FILLED if slot_idx < current else EMPTY
                 result.append(
                     symbol,
                     style=(

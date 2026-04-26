@@ -55,9 +55,7 @@ class ActionBarWidget(Widget):
             marker = "▊" if is_current else "▎"
 
             if is_enemy:
-                marker_style = Style(
-                    color="#ff4444", bold=is_current
-                )
+                marker_style = Style(color="#ff4444", bold=is_current)
                 name_style = Style(color="white", bold=is_current)
             else:
                 if is_current:

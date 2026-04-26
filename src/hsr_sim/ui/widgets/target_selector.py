@@ -102,9 +102,7 @@ class TargetSelector:
                 self._selected_ids = set()
                 self._primary_marked_ids = set()
             return
-        selected = self._rule.select_targets(
-            self._targets, self._primary_id
-        )
+        selected = self._rule.select_targets(self._targets, self._primary_id)
         self._selected_ids = {m.entity_id for m in selected}
         self._primary_marked_ids = {
             m.entity_id for m in selected if m.is_primary
