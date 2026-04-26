@@ -66,9 +66,7 @@ class EnergySystem(Processor):
         if not self.auto_recover_on_turn:
             return
         for ent, energy in esper.get_component(StandardEnergyComponent):
-            self._recover_energy(
-                ent, energy.max_energy * 0.25
-            )
+            self._recover_energy(ent, energy.max_energy * 0.25)
 
     def on_damage_dealt(self, event: Event | GameEvent):
         """处理伤害事件，受击角色恢复能量。"""

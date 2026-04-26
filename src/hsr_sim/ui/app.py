@@ -3,12 +3,13 @@ from collections.abc import Iterable
 from textual.app import App
 from .state import AppState
 from .screens.home import HomeScreen
+from .screens.battle import BattleScreen
 from textual.widget import Widget
 from textual.widgets import Header, Footer
 
 
 class HSRSimApp(App):
-    SCREENS = {"home": HomeScreen}
+    SCREENS = {"home": HomeScreen, "battle": BattleScreen}
 
     def __init__(self):
         super().__init__()
@@ -31,4 +32,4 @@ class HSRSimApp(App):
         self.notify("遗器管理功能开发中", title="管理遗器")
 
     def action_start_battle_sim(self) -> None:
-        self.notify("战斗模拟功能开发中", title="开始战斗模拟")
+        self.push_screen("battle")

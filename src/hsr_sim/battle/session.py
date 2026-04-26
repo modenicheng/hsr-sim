@@ -59,7 +59,9 @@ class BattleSession:
             self.world.hook_registry,
             lambda: self.current_tick,
         )
-        self.health_system = HealthSystem(self.world.event_stream, self.world.hook_registry)
+        self.health_system = HealthSystem(
+            self.world.event_stream, self.world.hook_registry
+        )
         self.energy_system = EnergySystem(self.world.event_stream)
         self.buff_system = BuffSystem(
             self.world.event_stream, self.world.hook_registry

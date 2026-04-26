@@ -53,7 +53,8 @@ class MaraStruckSoldierPassive(BaseSkill):
             health.value = health.max_value * 0.5
             status.status = CharacterStatus.ALIVE
             self.context.event_bus.publish_character_knocked_down_restored_event(
-                tick=0, entity_id=entity_id,
+                tick=0,
+                entity_id=entity_id,
             )
             return HookResult(stop=True)
 

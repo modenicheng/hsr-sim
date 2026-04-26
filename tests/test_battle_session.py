@@ -64,7 +64,9 @@ def test_action_input_validation():
     assert action.targets == [2]
 
 
-def _create_combat_entity(battle_session, hp=1000, atk=100, defense=100, speed=100, identity=None):
+def _create_combat_entity(
+    battle_session, hp=1000, atk=100, defense=100, speed=100, identity=None
+):
     """Create entity inside BattleSession's world (v1.0)."""
     esper.switch_world(battle_session.world.world_name)
     entity = esper.create_entity()
@@ -89,8 +91,12 @@ def _health_value(entity_id: int) -> float:
 
 
 def test_submit_action_applies_damage_and_advances_turn(battle_session):
-    attacker = _create_combat_entity(battle_session, hp=1200, atk=120, defense=80, speed=120)
-    defender = _create_combat_entity(battle_session, hp=900, atk=90, defense=90, speed=90)
+    attacker = _create_combat_entity(
+        battle_session, hp=1200, atk=120, defense=80, speed=120
+    )
+    defender = _create_combat_entity(
+        battle_session, hp=900, atk=90, defense=90, speed=90
+    )
 
     battle_session.start(team_ids=[attacker], enemy_ids=[defender])
     assert battle_session.state == BattleState.WAITING_ACTION
@@ -114,8 +120,12 @@ def test_submit_action_applies_damage_and_advances_turn(battle_session):
 def test_submit_action_unknown_type_returns_false_without_effect(
     battle_session,
 ):
-    attacker = _create_combat_entity(battle_session, hp=1200, atk=120, defense=80, speed=120)
-    defender = _create_combat_entity(battle_session, hp=900, atk=90, defense=90, speed=90)
+    attacker = _create_combat_entity(
+        battle_session, hp=1200, atk=120, defense=80, speed=120
+    )
+    defender = _create_combat_entity(
+        battle_session, hp=900, atk=90, defense=90, speed=90
+    )
 
     battle_session.start(team_ids=[attacker], enemy_ids=[defender])
     hp_before = _health_value(defender)
@@ -153,7 +163,9 @@ def test_submit_action_loads_skill_script_by_skill_id(
             version="v1.0",
         ),
     )
-    defender = _create_combat_entity(battle_session, hp=900, atk=90, defense=90, speed=90)
+    defender = _create_combat_entity(
+        battle_session, hp=900, atk=90, defense=90, speed=90
+    )
 
     class _FakeSkill:
         def __init__(self):

@@ -3,8 +3,10 @@
 Usage:
     uv run python scripts/test_seele_skill_manual.py
 """
+
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import esper
@@ -46,11 +48,15 @@ def make_seele(version: str = "v1.0") -> int:
     """Create a level-80 Seele entity."""
     seele_cfg = config_loader.get_character("seele", version=version)["config"]
     entity = esper.create_entity()
-    esper.add_component(entity, HealthComponent(value=10000.0, max_value=10000.0))
+    esper.add_component(
+        entity, HealthComponent(value=10000.0, max_value=10000.0)
+    )
     esper.add_component(entity, AttackComponent(value=582.4))
     esper.add_component(entity, DefenseComponent(value=699.8))
     esper.add_component(entity, SpeedComponent(base_speed=109.0))
-    esper.add_component(entity, StandardEnergyComponent(energy=0.0, max_energy=120.0))
+    esper.add_component(
+        entity, StandardEnergyComponent(energy=0.0, max_energy=120.0)
+    )
     esper.add_component(
         entity, CharacterStatusComponent(status=CharacterStatus.ALIVE)
     )
@@ -71,7 +77,9 @@ def make_seele(version: str = "v1.0") -> int:
 def make_enemy(version: str = "v1.0") -> int:
     """Create a level-80 Mara-Struck Soldier entity."""
     entity = esper.create_entity()
-    esper.add_component(entity, HealthComponent(value=16518.0, max_value=16518.0))
+    esper.add_component(
+        entity, HealthComponent(value=16518.0, max_value=16518.0)
+    )
     esper.add_component(entity, AttackComponent(value=552.0))
     esper.add_component(entity, DefenseComponent(value=1000.0))
     esper.add_component(entity, SpeedComponent(base_speed=99.6))
@@ -89,7 +97,9 @@ def stat_table(title: str) -> Table:
     return t
 
 
-def show_entity(console: Console, label: str, entity_id: int, indent: str = "  "):
+def show_entity(
+    console: Console, label: str, entity_id: int, indent: str = "  "
+):
     health = esper.try_component(entity_id, HealthComponent)
     atk = esper.try_component(entity_id, AttackComponent)
     defense = esper.try_component(entity_id, DefenseComponent)
@@ -104,12 +114,16 @@ def show_entity(console: Console, label: str, entity_id: int, indent: str = "  "
         f"Status={status.status.value}"
     )
     if energy:
-        console.print(f"{indent}  Energy={energy.energy:.1f}/{energy.max_energy:.1f}")
+        console.print(
+            f"{indent}  Energy={energy.energy:.1f}/{energy.max_energy:.1f}"
+        )
 
 
 def main():
     console = Console()
-    console.print("\n[bold cyan]=== Seele + Mara-Struck Soldier Combat Test ===[/]\n")
+    console.print(
+        "\n[bold cyan]=== Seele + Mara-Struck Soldier Combat Test ===[/]\n"
+    )
 
     version = "v1.0"
     world = ECSWorld(version)
@@ -140,12 +154,19 @@ def main():
 
     skill_bundle = CharacterSkillLoader(config_loader).load_for_character(
         _user_char_for(seele),
-        SkillContext(world=world, event_bus=world.event_stream,
-                     hook_chain=world.hook_registry),
+        SkillContext(
+            world=world,
+            event_bus=world.event_stream,
+            hook_chain=world.hook_registry,
+        ),
         activated_bonus_ability_ids=set(),
     )
-    console.print(f"[green]Loaded {len(skill_bundle.all)} skill scripts[/green]")
-    console.print(f"  eidolons active: {[type(e).__name__ for e in skill_bundle.eidolons]}")
+    console.print(
+        f"[green]Loaded {len(skill_bundle.all)} skill scripts[/green]"
+    )
+    console.print(
+        f"  eidolons active: {[type(e).__name__ for e in skill_bundle.eidolons]}"
+    )
 
     console.print("\n[bold]--- Turn 1: Seele uses Skill ---[/bold]")
     skill = skill_bundle.active[1]
@@ -165,7 +186,9 @@ def main():
     health.value = 500.0
     show_entity(console, "Enemy", enemy)
 
-    console.print("\n[bold]--- Turn 2: Seele uses Skill again (E1 active: +15% CR vs HP<=80%) ---[/bold]")
+    console.print(
+        "\n[bold]--- Turn 2: Seele uses Skill again (E1 active: +15% CR vs HP<=80%) ---[/bold]"
+    )
     result2 = skill.execute(seele, [enemy])
     console.print(f"Script result: {result2}")
     show_entity(console, "Seele (after skill 2)", seele)
@@ -173,14 +196,18 @@ def main():
     console.print()
 
     console.print("[bold]--- Enemy defeated ---[/bold]")
-    console.print("  Enemy already knocked down from Skill 2. E4 energy restore: +15 (correct).")
+    console.print(
+        "  Enemy already knocked down from Skill 2. E4 energy restore: +15 (correct)."
+    )
 
     show_entity(console, "Enemy (knocked down)", enemy)
     seele_energy = esper.try_component(seele, StandardEnergyComponent)
     console.print(f"  Seele energy: {seele_energy.energy:.1f}")
     console.print()
 
-    console.print("[bold]--- Enemy passive: Rejuvenate (first KO: 50% HP revive) ---[/bold]")
+    console.print(
+        "[bold]--- Enemy passive: Rejuvenate (first KO: 50% HP revive) ---[/bold]"
+    )
     enemy_passive = load_enemy_passive(enemy, world, console)
     activate_passive(enemy_passive)
     console.print("  Resetting enemy to ALIVE, dealing lethal damage...")
@@ -194,9 +221,13 @@ def main():
     show_entity(console, "Enemy (should be revived at 50% HP)", enemy)
     expected_hp = health.max_value * 0.5
     actual_pct = health.value / health.max_value * 100
-    console.print(f"  Expected HP: {expected_hp:.0f} (50%), Got: {health.value:.0f} ({actual_pct:.0f}%)")
+    console.print(
+        f"  Expected HP: {expected_hp:.0f} (50%), Got: {health.value:.0f} ({actual_pct:.0f}%)"
+    )
 
-    console.print("\n[bold]--- Enemy passive: Rejuvenate (second KO — permanent) ---[/bold]")
+    console.print(
+        "\n[bold]--- Enemy passive: Rejuvenate (second KO — permanent) ---[/bold]"
+    )
     console.print("  Dealing lethal damage again...")
     hlth_sys._apply_damage(enemy, health.max_value + 1, source_id=seele)
     show_entity(console, "Enemy (now perma-knocked down)", enemy)

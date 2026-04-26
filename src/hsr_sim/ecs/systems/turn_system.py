@@ -110,7 +110,9 @@ class TurnSystem(Processor):
         self._normalize_queue()
         self._advance_to_next_actor()
 
-    def on_speed_changed(self, entity_id: int, old_speed: float, new_speed: float):
+    def on_speed_changed(
+        self, entity_id: int, old_speed: float, new_speed: float
+    ):
         """处理速度变更：重新计算该实体的行动值并重新插入。
 
         当固定速度加成变化时调用（如获得/失去速度buff）。

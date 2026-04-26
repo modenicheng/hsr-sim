@@ -70,11 +70,15 @@ def make_seele(version: str = "v1.0") -> int:
     esper.add_component(e, AttackComponent(value=1582.4))
     esper.add_component(e, DefenseComponent(value=1699.8))
     esper.add_component(e, SpeedComponent(base_speed=149.0))
-    esper.add_component(e, StandardEnergyComponent(energy=30.0, max_energy=120.0))
+    esper.add_component(
+        e, StandardEnergyComponent(energy=30.0, max_energy=120.0)
+    )
     esper.add_component(
         e, SkillPointComponent(current=MAX_SP, max_value=MAX_SP)
     )
-    esper.add_component(e, CharacterStatusComponent(status=CharacterStatus.ALIVE))
+    esper.add_component(
+        e, CharacterStatusComponent(status=CharacterStatus.ALIVE)
+    )
     esper.add_component(e, BuffContainerComponent())
     esper.add_component(e, CritRateComponent(value=0.65))
     esper.add_component(e, CritDamageComponent(value=2.50))
@@ -90,13 +94,19 @@ def make_seele(version: str = "v1.0") -> int:
 
 
 def make_enemy(version: str = "v1.0") -> int:
-    cfg = config_loader.get_enemy_config("mara_struck_soldier", version)["config"]
+    cfg = config_loader.get_enemy_config("mara_struck_soldier", version)[
+        "config"
+    ]
     e = esper.create_entity()
-    esper.add_component(e, HealthComponent(value=cfg.base_hp, max_value=cfg.base_hp))
+    esper.add_component(
+        e, HealthComponent(value=cfg.base_hp, max_value=cfg.base_hp)
+    )
     esper.add_component(e, AttackComponent(value=cfg.base_atk))
     esper.add_component(e, DefenseComponent(value=cfg.base_def))
     esper.add_component(e, SpeedComponent(base_speed=cfg.base_spd))
-    esper.add_component(e, CharacterStatusComponent(status=CharacterStatus.ALIVE))
+    esper.add_component(
+        e, CharacterStatusComponent(status=CharacterStatus.ALIVE)
+    )
     esper.add_component(e, BuffContainerComponent())
     return e
 
@@ -122,7 +132,9 @@ def make_status_table(entities: list[tuple[str, int]]) -> Table:
         status = esper.try_component(eid, CharacterStatusComponent)
         hp_str = f"{hp.value:.0f}/{hp.max_value:.0f}" if hp else "?"
         spd_str = f"{spd.final_speed:.1f}" if spd else "?"
-        en_str = f"{energy.energy:.0f}/{energy.max_energy:.0f}" if energy else "?"
+        en_str = (
+            f"{energy.energy:.0f}/{energy.max_energy:.0f}" if energy else "?"
+        )
         st_str = status.status.value if status else "?"
         t.add_row(label, hp_str, spd_str, en_str, st_str)
     return t
@@ -223,7 +235,9 @@ def execute_seele_action(
         if console:
             console.print("  [red]Quantum DMG: " + f"{dmg_dealt:.0f}" + "[/]")
             console.print(
-                "  " + target_label + " HP: "
+                "  "
+                + target_label
+                + " HP: "
                 + f"{hp_before:.0f} -> {max(hp_after, 0):.0f}"
             )
 
@@ -237,8 +251,10 @@ def execute_seele_action(
             console.print(
                 "  [cyan]SPD: "
                 + f"{spd_before_val:.1f} -> {spd_after_val:.1f}"
-                + " (+" + f"{SPD_BUFF_AMOUNT * stack_after.current:.1f}) "
-                + stack_info + "[/]"
+                + " (+"
+                + f"{SPD_BUFF_AMOUNT * stack_after.current:.1f}) "
+                + stack_info
+                + "[/]"
             )
 
         return hp_before, hp_after
@@ -264,7 +280,9 @@ def execute_seele_action(
         if console:
             console.print("  [red]Quantum DMG: " + f"{dmg_dealt:.0f}" + "[/]")
             console.print(
-                "  " + target_label + " HP: "
+                "  "
+                + target_label
+                + " HP: "
                 + f"{hp_before:.0f} -> {max(hp_after, 0):.0f}"
             )
         return hp_before, hp_after
@@ -338,16 +356,17 @@ def main():
 
     if talent_script:
         console.print(
-            "  [green]Talent: " + type(talent_script).__name__
+            "  [green]Talent: "
+            + type(talent_script).__name__
             + " (Resurgence +80% DMG)[/]"
         )
     console.print(
         "  [green]Ultimate: " + type(seele_ultimate_script).__name__ + "[/]"
     )
 
-    enemy_cfg = config_loader.get_enemy_config(
-        "mara_struck_soldier", version
-    )["config"]
+    enemy_cfg = config_loader.get_enemy_config("mara_struck_soldier", version)[
+        "config"
+    ]
     passive_cfg = enemy_cfg.passives[0]
     for eid in (enemy1, enemy2):
         obj = SkillScriptLoader().load_passive(
@@ -387,7 +406,9 @@ def main():
     turn_sys.initialize()
     console.print("[green]+ Turn system ready[/]\n")
 
-    console.print(render_action_bar(entities, turn_sys.current_actor_id, turn_sys))
+    console.print(
+        render_action_bar(entities, turn_sys.current_actor_id, turn_sys)
+    )
     console.print(render_skill_point_bar(seele))
     console.print()
 
@@ -409,8 +430,7 @@ def main():
         hp_before = tgt_hp.value
 
         console.print(
-            "\n[bold magenta]*** ULTIMATE: Seele -> "
-            + target_label + " ***[/]"
+            "\n[bold magenta]*** ULTIMATE: Seele -> " + target_label + " ***[/]"
         )
 
         result = seele_ultimate_script.execute(seele, [target])
@@ -426,14 +446,14 @@ def main():
         dmg_dealt = hp_before - hp_after
         console.print("  [bold red]Ult DMG: " + f"{dmg_dealt:.0f}" + "[/]")
         console.print(
-            "  " + target_label + " HP: "
+            "  "
+            + target_label
+            + " HP: "
             + f"{hp_before:.0f} -> {max(hp_after, 0):.0f}"
         )
 
         seele_en.energy = 0
-        console.print(
-            "  [magenta]Energy: 120 -> 0[/]"
-        )
+        console.print("  [magenta]Energy: 120 -> 0[/]")
 
         if hp_after <= 0 and talent_script is not None:
             talent_script.resurgence_active = True
@@ -441,7 +461,8 @@ def main():
 
         if hp_after <= 0 and alive(target):
             console.print(
-                "[bold yellow]" + target_label
+                "[bold yellow]"
+                + target_label
                 + " revived (Rejuvenate: 50% HP)![/]"
             )
 
@@ -484,18 +505,28 @@ def main():
                     console.print("[green]* No enemies remain[/]")
                     break
 
-                target_label = next(lbl for lbl, eid in entities if eid == target)
+                target_label = next(
+                    lbl for lbl, eid in entities if eid == target
+                )
 
-                resurg = talent_script is not None and talent_script.consume_resurgence(seele)
+                resurg = (
+                    talent_script is not None
+                    and talent_script.consume_resurgence(seele)
+                )
                 hp_before, hp_after = execute_seele_action(
-                    seele, target, target_label,
-                    seele_skill_script, dmg_sys,
+                    seele,
+                    target,
+                    target_label,
+                    seele_skill_script,
+                    dmg_sys,
                     resurgence_active=resurg,
                     console=console,
                 )
 
                 if hp_after <= 0:
-                    seele_en = esper.try_component(seele, StandardEnergyComponent)
+                    seele_en = esper.try_component(
+                        seele, StandardEnergyComponent
+                    )
                     if seele_en:
                         console.print(
                             "  [magenta]Energy: "
@@ -511,8 +542,13 @@ def main():
                             + " revived (Rejuvenate: 50% HP)![/]"
                         )
 
-                if talent_script is not None and talent_script.resurgence_active:
-                    console.print("  [bold magenta]>>> Resurgence triggered![/]")
+                if (
+                    talent_script is not None
+                    and talent_script.resurgence_active
+                ):
+                    console.print(
+                        "  [bold magenta]>>> Resurgence triggered![/]"
+                    )
                     continue
                 break
 
@@ -521,16 +557,22 @@ def main():
         else:
             if not alive(seele):
                 console.print(
-                    "\n[bold yellow]> " + label + "[/] -- [dim]Seele down, skip[/]"
+                    "\n[bold yellow]> "
+                    + label
+                    + "[/] -- [dim]Seele down, skip[/]"
                 )
                 turn_sys.on_action_finished()
                 continue
 
             console.print(
-                "\n[bold yellow]> " + label + "[/] -- [bold]Basic Attack[/] -> Seele"
+                "\n[bold yellow]> "
+                + label
+                + "[/] -- [bold]Basic Attack[/] -> Seele"
             )
             enemy_atk = esper.component_for_entity(actor, AttackComponent).value
-            seele_hp_before = esper.component_for_entity(seele, HealthComponent).value
+            seele_hp_before = esper.component_for_entity(
+                seele, HealthComponent
+            ).value
 
             dmg_sys.calculate_and_apply_damage(
                 attacker_id=actor,
@@ -539,7 +581,9 @@ def main():
                 damage_type="physical",
             )
 
-            seele_hp_after = esper.component_for_entity(seele, HealthComponent).value
+            seele_hp_after = esper.component_for_entity(
+                seele, HealthComponent
+            ).value
             actual = seele_hp_before - seele_hp_after
             console.print("  [red]Physical DMG: " + f"{actual:.0f}" + "[/]")
             console.print(
@@ -567,10 +611,14 @@ def main():
         turn_sys.on_action_finished()
 
         if not alive(seele):
-            console.print(Panel("[bold red]x Seele defeated![/]", box=box.ROUNDED))
+            console.print(
+                Panel("[bold red]x Seele defeated![/]", box=box.ROUNDED)
+            )
             break
 
-        enemies_alive = [eid for _, eid in entities if eid != seele and alive(eid)]
+        enemies_alive = [
+            eid for _, eid in entities if eid != seele and alive(eid)
+        ]
         if not enemies_alive:
             console.print(Panel("[bold green]* Victory![/]", box=box.ROUNDED))
             break
@@ -593,7 +641,11 @@ def main():
     if spd:
         stack_str = str(stack.current) + "/" + str(stack.max) if stack else "?"
         console.print(
-            "  SPD: " + f"{spd.final_speed:.1f}" + "  (stacks: " + stack_str + ")"
+            "  SPD: "
+            + f"{spd.final_speed:.1f}"
+            + "  (stacks: "
+            + stack_str
+            + ")"
         )
     if en:
         console.print(
